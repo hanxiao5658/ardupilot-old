@@ -326,6 +326,14 @@ void Copter::fourhundred_hz_logging()
 // should be run at 10hz
 void Copter::ten_hz_logging_loop()
 {
+
+    // log ADRC_pos_x data
+    Log_Write_ADRCX();
+    // log ADRC_pos_y data
+    Log_Write_ADRCY();
+    // log ADRC_pos_z data
+    Log_Write_ADRCZ();
+
     // log attitude data if we're not already logging at the higher rate
     if (should_log(MASK_LOG_ATTITUDE_MED) && !should_log(MASK_LOG_ATTITUDE_FAST)) {
         Log_Write_Attitude();

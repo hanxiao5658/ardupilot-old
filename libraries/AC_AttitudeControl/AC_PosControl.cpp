@@ -635,6 +635,7 @@ void AC_PosControl::run_z_controller()
 
 ///////////////////////////////////////////////////////////////////
 
+
  if(ADRC_POS_Z.ADRC_flag == 1)
 {
 
@@ -644,7 +645,6 @@ void AC_PosControl::run_z_controller()
   ADRC_Control_POS(&ADRC_POS_Z , _vel_target.z , curr_vel.z);
   thr_out =  ADRC_POS_Z.u +_motors.get_throttle_hover() ;
   
-
   }
 
 ///////////////////////////////////////////////////////////////////
@@ -1086,6 +1086,7 @@ void AC_PosControl::run_xy_controller(float dt, float ekfNavVelGainScaler)
     accel_target.y = (vel_xy_p.y + vel_xy_i.y + vel_xy_d.y) * ekfNavVelGainScaler;
 
 //////////////////////////////////////////////////////////////////////////////////////////
+
     /*******ADRC output*******/
      if(ADRC_POS_X.ADRC_flag == 1)
      {
@@ -1102,6 +1103,7 @@ void AC_PosControl::run_xy_controller(float dt, float ekfNavVelGainScaler)
      // accel_target.x = ADRC_POS_X.u ;
      // accel_target.y = ADRC_POS_Y.u ;
      }
+
 //////////////////////////////////////////////////////////////////////////////////////////
 
     // reset accel to current desired acceleration
