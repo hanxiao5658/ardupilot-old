@@ -980,6 +980,9 @@ private:
 #if MODE_LOITER_ENABLED == ENABLED
     ModeLoiter mode_loiter;
 #endif
+
+    ModeADRCloiter mode_ADRCloiter;
+
 #if MODE_POSHOLD_ENABLED == ENABLED
     ModePosHold mode_poshold;
 #endif
