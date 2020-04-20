@@ -4,6 +4,9 @@
 #include <DataFlash/DataFlash.h>
 
 extern const AP_HAL::HAL& hal;
+extern POS_Fhan_Data ADRC_POS_X;
+extern POS_Fhan_Data ADRC_POS_Y;
+extern POS_Fhan_Data ADRC_POS_Z;
 
 #if APM_BUILD_TYPE(APM_BUILD_ArduPlane)
  // default gains for Plane
@@ -630,6 +633,22 @@ void AC_PosControl::run_z_controller()
 
     float thr_out = (p+i+d)*0.001f +_motors.get_throttle_hover();
 
+///////////////////////////////////////////////////////////////////
+
+ if(ADRC_POS_Z.ADRC_flag == 1)
+{
+
+  ADRC_POS_Z.bais_compenseter = _motors.get_throttle_hover() ;
+  ADRC_POS_Z.gain_compenseter = 0.001f ;
+   
+  ADRC_Control_POS(&ADRC_POS_Z , _vel_target.z , curr_vel.z);
+  thr_out =  ADRC_POS_Z.u +_motors.get_throttle_hover() ;
+  
+
+  }
+
+///////////////////////////////////////////////////////////////////
+
     // send throttle to attitude controller with angle boost
     _attitude_control.set_throttle_out(thr_out, true, POSCONTROL_THROTTLE_CUTOFF_FREQ);
 }
@@ -1066,6 +1085,25 @@ void AC_PosControl::run_xy_controller(float dt, float ekfNavVelGainScaler)
     accel_target.x = (vel_xy_p.x + vel_xy_i.x + vel_xy_d.x) * ekfNavVelGainScaler;
     accel_target.y = (vel_xy_p.y + vel_xy_i.y + vel_xy_d.y) * ekfNavVelGainScaler;
 
+//////////////////////////////////////////////////////////////////////////////////////////
+    /*******ADRC output*******/
+     if(ADRC_POS_X.ADRC_flag == 1)
+     {
+      ADRC_POS_X.gain_compenseter = ekfNavVelGainScaler;
+      ADRC_POS_Y.gain_compenseter = ekfNavVelGainScaler;
+      ADRC_POS_X.bais_compenseter = _accel_desired.x;
+      ADRC_POS_Y.bais_compenseter = _accel_desired.y;
+
+     // pass velocity error to ADRC 
+     ADRC_Control_POS( &ADRC_POS_X , _vel_target.x , _vehicle_horiz_vel.x );
+     ADRC_Control_POS( &ADRC_POS_Y , _vel_target.y , _vehicle_horiz_vel.y );
+     
+     /****** calculate XY_ADRC control signal *****/
+     // accel_target.x = ADRC_POS_X.u ;
+     // accel_target.y = ADRC_POS_Y.u ;
+     }
+//////////////////////////////////////////////////////////////////////////////////////////
+
     // reset accel to current desired acceleration
      if (_flags.reset_accel_to_lean_xy) {
          _accel_target_filter.reset(Vector2f(accel_target.x, accel_target.y));
@@ -1081,8 +1119,8 @@ void AC_PosControl::run_xy_controller(float dt, float ekfNavVelGainScaler)
     _accel_target.y = _accel_target_filter.get().y;
 
     // Add feed forward into the target acceleration output
-    _accel_target.x += _accel_desired.x;
-    _accel_target.y += _accel_desired.y;
+    //_accel_target.x += _accel_desired.x;
+    //_accel_target.y += _accel_desired.y;
 
     // the following section converts desired accelerations provided in lat/lon frame to roll/pitch angles
 
