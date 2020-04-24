@@ -2,6 +2,10 @@
 #include <AP_HAL/AP_HAL.h>
 #include <AP_Math/AP_Math.h>
 
+extern Fhan_Data ADRCROLL;
+extern Fhan_Data ADRCPITCH;
+extern Fhan_Data ADRCYAW;
+
 #if APM_BUILD_TYPE(APM_BUILD_ArduPlane)
  // default gains for Plane
  # define AC_ATTITUDE_CONTROL_INPUT_TC_DEFAULT  0.2f    // Soft
@@ -837,8 +841,15 @@ float AC_AttitudeControl::rate_target_to_motor_roll(float rate_actual_rads, floa
     // Compute output in range -1 ~ +1
     float output = get_rate_roll_pid().get_p() + integrator + get_rate_roll_pid().get_d() + get_rate_roll_pid().get_ff(rate_target_rads);
 
+////////////////////////////////////////////////////////////////////////////////////////////////
+    float RAW_PD_signal = get_rate_roll_pid().get_p() + get_rate_roll_pid().get_d();
+    ESO(&ADRCROLL, RAW_PD_signal , rate_actual_rads);
+    float final_control_signal = output - ADRCROLL.z2 / ADRCROLL.b0;
+
+////////////////////////////////////////////////////////////////////////////////////////////////
+
     // Constrain output
-    return constrain_float(output, -1.0f, 1.0f);
+    return constrain_float(final_control_signal, -1.0f, 1.0f);
 }
 
 // Run the pitch angular velocity PID controller and return the output
@@ -860,8 +871,16 @@ float AC_AttitudeControl::rate_target_to_motor_pitch(float rate_actual_rads, flo
     // Compute output in range -1 ~ +1
     float output = get_rate_pitch_pid().get_p() + integrator + get_rate_pitch_pid().get_d() + get_rate_pitch_pid().get_ff(rate_target_rads);
 
+////////////////////////////////////////////////////////////////////////////////////////////////
+    float RAW_PD_signal = get_rate_pitch_pid().get_p() + get_rate_pitch_pid().get_d();
+    ESO(&ADRCPITCH, RAW_PD_signal , rate_actual_rads);
+    float final_control_signal = output - ADRCPITCH.z2 / ADRCPITCH.b0;
+
+////////////////////////////////////////////////////////////////////////////////////////////////
+
+
     // Constrain output
-    return constrain_float(output, -1.0f, 1.0f);
+    return constrain_float(final_control_signal, -1.0f, 1.0f);
 }
 
 // Run the yaw angular velocity PID controller and return the output
@@ -883,8 +902,15 @@ float AC_AttitudeControl::rate_target_to_motor_yaw(float rate_actual_rads, float
     // Compute output in range -1 ~ +1
     float output = get_rate_yaw_pid().get_p() + integrator + get_rate_yaw_pid().get_d() + get_rate_yaw_pid().get_ff(rate_target_rads);
 
+////////////////////////////////////////////////////////////////////////////////////////////////
+    float RAW_PD_signal = get_rate_yaw_pid().get_p() + get_rate_yaw_pid().get_d();
+    ESO(&ADRCYAW, RAW_PD_signal , rate_actual_rads);
+    float final_control_signal = output - ADRCYAW.z2 / ADRCYAW.b0;
+
+////////////////////////////////////////////////////////////////////////////////////////////////
+
     // Constrain output
-    return constrain_float(output, -1.0f, 1.0f);
+    return constrain_float(final_control_signal, -1.0f, 1.0f);
 }
 
 // Enable or disable body-frame feed forward
