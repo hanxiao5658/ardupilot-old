@@ -929,46 +929,6 @@ private:
 };
 
 
-class ModeADRCloiter : public Mode {
-
-public:
-    // inherit constructor
-    using Copter::Mode::Mode;
-
-    bool init(bool ignore_checks) override;
-    void run() override;
-
-    bool requires_GPS() const override { return true; }
-    bool has_manual_throttle() const override { return false; }
-    bool allows_arming(bool from_gcs) const override { return true; };
-    bool is_autopilot() const override { return false; }
-    bool has_user_takeoff(bool must_navigate) const override { return true; }
-
-#if PRECISION_LANDING == ENABLED
-    void set_precision_loiter_enabled(bool value) { _precision_loiter_enabled = value; }
-#endif
-
-protected:
-
-    const char *name() const override { return "ADRCLOITER"; }
-    const char *name4() const override { return "ADRCLOITER"; }
-
-    uint32_t wp_distance() const override;
-    int32_t wp_bearing() const override;
-
-#if PRECISION_LANDING == ENABLED
-    bool do_precision_loiter();
-    void precision_loiter_xy();
-#endif
-
-private:
-
-#if PRECISION_LANDING == ENABLED
-    bool _precision_loiter_enabled;
-#endif
-
-};
-
 class ModePosHold : public Mode {
 
 public:

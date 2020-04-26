@@ -791,13 +791,11 @@ private:
     void landinggear_update();
 
     // Log.cpp
-    void Log_Write_ADRCX();
-    void Log_Write_ADRCY();
-    void Log_Write_ADRCZ();
     void Log_Write_Optflow();
     void Log_Write_Control_Tuning();
     void Log_Write_Performance();
     void Log_Write_Attitude();
+    void Log_Write_ADRCattitude();
     void Log_Write_EKF_POS();
     void Log_Write_MotBatt();
     void Log_Write_Event(uint8_t id);
@@ -983,9 +981,6 @@ private:
 #if MODE_LOITER_ENABLED == ENABLED
     ModeLoiter mode_loiter;
 #endif
-
-    ModeADRCloiter mode_ADRCloiter;
-
 #if MODE_POSHOLD_ENABLED == ENABLED
     ModePosHold mode_poshold;
 #endif

@@ -35,18 +35,20 @@ float b0=2;//扰动补偿
 
 float kp = 0;
 float kd = 0;
-
+//float P_signal =0;
+//float D_signal =0;
+float final_signal = 0;
 
 
 //////////////////////////////////////////////////
 int constrain_flag = 0 ;
-int ADRC_flag = 0 ;
-float gravity_compenseter = 0 ;
-float bais_compenseter = 0 ;
+//int ADRC_flag = 0 ;
+//float gravity_compenseter = 0 ;
+//float bais_compenseter = 0 ;
 float gain_compenseter = 1 ;
 float currant_altitude = 0;
 float k=1 ;//z2的系数   
-float PID=0;
+float PD=0;
 /////////////////////////////////////////////////
 float actual_angle=0.0f;
 
@@ -64,6 +66,6 @@ float Fal_ADRC_POS(float e,float alpha,float zeta);
 void ESO_ADRC_POS(POS_Fhan_Data *fhan_Input);
 float Fhan_ADRC_POS(float x1_delta , float x2 ,float r , float h);
 void linear_Conbination_ADRC_POS(POS_Fhan_Data *fhan_Input);
-
+void ESO_POS(POS_Fhan_Data *fhan_Input, float PD_signal, float feedback_signal ,float w0 );
 
 

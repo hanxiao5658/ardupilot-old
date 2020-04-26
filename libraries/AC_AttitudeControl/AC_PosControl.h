@@ -376,6 +376,7 @@ protected:
     AC_P        _p_pos_z;
     AC_P        _p_vel_z;
     AC_PID      _pid_accel_z;
+    AC_PID      _pid_vel_z;
     AC_P        _p_pos_xy;
     AC_PID_2D   _pid_vel_xy;
 

@@ -1,10 +1,6 @@
 #include "Copter.h"
 
 #if LOGGING_ENABLED == ENABLED
-
-// Code to Write and Read packets from DataFlash log memory
-// Code to interact with the user to dump or erase logs
-
 extern POS_Fhan_Data ADRC_POS_X;
 extern POS_Fhan_Data ADRC_POS_Y;
 extern POS_Fhan_Data ADRC_POS_Z;
@@ -12,6 +8,8 @@ extern POS_Fhan_Data ADRC_POS_Z;
 extern Fhan_Data ADRCROLL;
 extern Fhan_Data ADRCPITCH;
 extern Fhan_Data ADRCYAW;
+// Code to Write and Read packets from DataFlash log memory
+// Code to interact with the user to dump or erase logs
 
 #if AUTOTUNE_ENABLED == ENABLED
 struct PACKED log_AutoTune {
@@ -100,95 +98,6 @@ void Copter::Log_Write_Optflow()
  #endif     // OPTFLOW == ENABLED
 }
 
-
-////////////////////////////////////////////
-//log ADRC_x
-struct PACKED log_ADRCX {
-    LOG_PACKET_HEADER;
-    uint64_t time_us;
-    float TD_x_x1;
-    float TD_x_x2;
-    float SEF_x_u0;
-    float SEF_x_u;
-    float ESO_x_z1;
-    float ESO_x_z2;
-};
-
-// Write an ADRC X packet
-void Copter::Log_Write_ADRCX()
-{
- struct log_ADRCX pkt = {
-        LOG_PACKET_HEADER_INIT(LOG_ADRC_x_MSG),
-        time_us         : AP_HAL::micros64(),
-        TD_x_x1              : ADRC_POS_X.x1,
-        TD_x_x2              : ADRC_POS_X.x2,
-        SEF_x_u0             : ADRC_POS_X.u0,
-        SEF_x_u              : ADRC_POS_X.u,
-        ESO_x_z1             : ADRC_POS_X.z1,
-        ESO_x_z2             : ADRC_POS_X.z2,
-    };
-    DataFlash.WriteBlock(&pkt, sizeof(pkt));
-}
-
-//log ADRC_y
-struct PACKED log_ADRCY {
-    LOG_PACKET_HEADER;
-    uint64_t time_us;
-    float TD_y_x1;
-    float TD_y_x2;
-    float SEF_y_u0;
-    float SEF_y_u;
-    float ESO_y_z1;
-    float ESO_y_z2;
-};
-
-// Write an ADRC Y packet
-void Copter::Log_Write_ADRCY()
-{
- struct log_ADRCY pkt = {
-        LOG_PACKET_HEADER_INIT(LOG_ADRC_y_MSG),
-        time_us         : AP_HAL::micros64(),
-        TD_y_x1              : ADRC_POS_Y.x1,
-        TD_y_x2              : ADRC_POS_Y.x2,
-        SEF_y_u0             : ADRC_POS_Y.u0,
-        SEF_y_u              : ADRC_POS_Y.u,
-        ESO_y_z1             : ADRC_POS_Y.z1,
-        ESO_y_z2             : ADRC_POS_Y.z2,
-    };
-    DataFlash.WriteBlock(&pkt, sizeof(pkt));
-}
-
-//log ADRC_Z
-struct PACKED log_ADRCZ {
-    LOG_PACKET_HEADER;
-    uint64_t time_us;
-    float TD_z_x1;
-    float TD_z_x2;
-    float SEF_z_u0;
-    float SEF_z_u;
-    float ESO_z_z1;
-    float ESO_z_z2;
-};
-
-
-// Write an ADRC Z packet
-void Copter::Log_Write_ADRCZ()
-{
- struct log_ADRCZ pkt = {
-        LOG_PACKET_HEADER_INIT(LOG_ADRC_z_MSG),
-        time_us         : AP_HAL::micros64(),
-        TD_z_x1              : ADRC_POS_Z.x1,
-        TD_z_x2              : ADRC_POS_Z.x2,
-        SEF_z_u0             : ADRC_POS_Z.u0,
-        SEF_z_u              : ADRC_POS_Z.u,
-        ESO_z_z1             : ADRC_POS_Z.z1,
-        ESO_z_z2             : ADRC_POS_Z.z2,
-    };
-    DataFlash.WriteBlock(&pkt, sizeof(pkt));
-}
-
-////////////////////////////////////////////
-
 struct PACKED log_Control_Tuning {
     LOG_PACKET_HEADER;
     uint64_t time_us;
@@ -261,6 +170,48 @@ void Copter::Log_Write_Attitude()
         DataFlash.Log_Write_PID(LOG_PIDY_MSG, attitude_control->get_rate_yaw_pid().get_pid_info());
         DataFlash.Log_Write_PID(LOG_PIDA_MSG, pos_control->get_accel_z_pid().get_pid_info() );
     }
+}
+
+
+//log ADRC_attitude
+struct PACKED log_ADRCattitude {
+    LOG_PACKET_HEADER;
+    uint64_t time_us;
+    float roll_p;
+    float roll_d;
+    float roll_z2;
+    float roll_final_signal;
+    float pitch_p;
+    float pitch_d;
+    float pitch_z2;
+    float pitch_final_signal;
+    float yaw_p;
+    float yaw_d;
+    float yaw_z2;
+    float yaw_final_signal;
+};
+
+
+// Write an ADRC Z packet
+void Copter::Log_Write_ADRCattitude()
+{
+ struct log_ADRCattitude pkt = {
+        LOG_PACKET_HEADER_INIT(LOG_ADRC_att_MSG),
+        time_us         : AP_HAL::micros64(),
+        roll_p              : ADRCROLL.ADRC_P_signal,
+        roll_d              : ADRCROLL.ADRC_D_signal,
+        roll_z2             : ADRCROLL.z2,
+        roll_final_signal   : ADRCROLL.ADRC_final_signal,
+        pitch_p              : ADRCPITCH.ADRC_P_signal,
+        pitch_d              : ADRCPITCH.ADRC_D_signal,
+        pitch_z2             : ADRCPITCH.z2,
+        pitch_final_signal   : ADRCPITCH.ADRC_final_signal,
+        yaw_p              : ADRCYAW.ADRC_P_signal,
+        yaw_d              : ADRCYAW.ADRC_D_signal,
+        yaw_z2             : ADRCYAW.z2,
+        yaw_final_signal   : ADRCYAW.ADRC_final_signal,
+    };
+    DataFlash.WriteBlock(&pkt, sizeof(pkt));
 }
 
 // Write an EKF and POS packet
@@ -619,19 +570,9 @@ const struct LogStructure Copter::log_structure[] = {
     { LOG_ERROR_MSG, sizeof(log_Error),         
       "ERR",   "QBB",         "TimeUS,Subsys,ECode", "s--", "F--" },
 
-/////////////////////////////////////////////////////////////
-//  ADRC_x
-    { LOG_ADRC_x_MSG, sizeof(log_ADRCX),
-      "ESOX",   "QBBBBBB",   "TimeUS,x1,x2,u0,u,z1,z2", "s------", "F------" },
+    { LOG_ADRC_att_MSG, sizeof(log_ADRCattitude),
+      "ADRC",   "QBBBBBBBBBBBB",   "TimeUS,r_P,r_D,r_z2,r_fs,p_P,p_D,p_z2,p_fs,y_P,y_D,y_z2,y_fs", "s------------", "F------------" },
 
-//  ADRC_y
-    { LOG_ADRC_y_MSG, sizeof(log_ADRCY),
-      "ESOY",   "QBBBBBB",   "TimeUS,x1,x2,u0,u,z1,z2", "s------", "F------" },
-
-//  ADRC_z
-    { LOG_ADRC_z_MSG, sizeof(log_ADRCZ),
-      "ESOZ",   "QBBBBBB",   "TimeUS,x1,x2,u0,u,z1,z2", "s------", "F------" },
-/////////////////////////////////////////////////////////////
 #if FRAME_CONFIG == HELI_FRAME
     { LOG_HELI_MSG, sizeof(log_Heli),
       "HELI",  "Qff",         "TimeUS,DRRPM,ERRPM", "s--", "F--" },

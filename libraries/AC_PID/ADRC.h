@@ -46,30 +46,15 @@ float alpha1=0.8f;//u0=beta_1*fal(e1,alpha1,zeta)+beta_2*fal(e2,alpha2,zeta)  0.
 float alpha2=1.5f;//0<alpha1<1<alpha2?????????????  0.05   loaded0.5
 float zeta=50 ;//线性段的区间长度 50 10 15 9 13
 
-/*********第三种组合形式*********/
-//float h1;//u0=-fhan(e1,e2,r,h1);
-//uint16 N1;//跟踪微分器解决速度超调h0=N*h
-/*********第四种组合形式*********/
-
-
+float ADRC_P_signal = 0 ;
+float ADRC_D_signal = 0 ;
+float ADRC_final_signal = 0;
 
 //////////////////////////////////////////////////
 float k=1;//z3的系数   0.0015 0.5
 float _i=0;
 int ADRC_flag = 0 ;
-//float attitudedata=0;////////////////////////////////在pos control.cpp里传递高度 全部用这个就行
-/*/float attitudedata_temp=0;
-float PIDoutput=0;
-float target_roll_angle=0.0f;//在attitudecontrol.cpp里246左右传递角度数据
-float target_pitch_angle=0.0f;
-float target_yaw_angle=0.0f;
 
-float actual_pitch_angle=0.0f;
-float actual_yaw_angle=0.0f;
-float alphaz3=0;
-float zetaz3=0;
-*//////////////////////////////////////////////////
-float actual_angle=0.0f;
 
 }Fhan_Data;
 
@@ -88,5 +73,6 @@ void ESO_ADRC(Fhan_Data *fhan_Input);
 void Nolinear_Conbination_ADRC(Fhan_Data *fhan_Input);
 float Fhan_ADRC(float x1_delta , float x2 ,float r , float h);
 //extern Fhan_Data ADRC_Pitch_Controller,ADRC_Roll_Controller;
+void ESO(Fhan_Data *fhan_Input, float PD_signal, float feedback_signal);
 
 

@@ -4,6 +4,8 @@
 #include <AP_Math/AP_Math.h>
 #include "AC_PID.h"
 
+
+
 const AP_Param::GroupInfo AC_PID::var_info[] = {
     // @Param: P
     // @DisplayName: PID Proportional Gain
@@ -58,7 +60,6 @@ AC_PID::AC_PID(float initial_p, float initial_i, float initial_d, float initial_
     _imax = fabsf(initial_imax);
     filt_hz(initial_filt_hz);
     _ff = initial_ff;
-
     // reset input filter to first value received
     _flags._reset_filter = true;
 

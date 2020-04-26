@@ -2,11 +2,21 @@
 #include "AC_PosControl.h"
 #include <AP_Math/AP_Math.h>
 #include <DataFlash/DataFlash.h>
+//#include <iostream>
+//#include <fstream>
+//using namespace std;
+//ofstream ADRCfile("ADRCdata.txt");
 
 extern const AP_HAL::HAL& hal;
+extern Fhan_Data ADRCdata;
+
 extern POS_Fhan_Data ADRC_POS_X;
 extern POS_Fhan_Data ADRC_POS_Y;
 extern POS_Fhan_Data ADRC_POS_Z;
+extern Fhan_Data ADRCYAW;
+int cc=0;
+float temp_AL=0;
+extern const AP_HAL::HAL& hal;
 
 #if APM_BUILD_TYPE(APM_BUILD_ArduPlane)
  // default gains for Plane
@@ -59,6 +69,14 @@ extern POS_Fhan_Data ADRC_POS_Z;
  # define POSCONTROL_VEL_XY_IMAX                1000.0f // horizontal velocity controller IMAX gain default
  # define POSCONTROL_VEL_XY_FILT_HZ             5.0f    // horizontal velocity controller input filter
  # define POSCONTROL_VEL_XY_FILT_D_HZ           5.0f    // horizontal velocity controller input filter for D
+
+ # define POSCONTROL_VEL_Z_P                   2.0f    // horizontal velocity controller P gain default
+ # define POSCONTROL_VEL_Z_I                   1.0f    // horizontal velocity controller I gain default
+ # define POSCONTROL_VEL_Z_D                   0.5f    // horizontal velocity controller D gain default
+ # define POSCONTROL_VEL_Z_IMAX                1000.0f // horizontal velocity controller IMAX gain default
+ # define POSCONTROL_VEL_Z_FILT_HZ             5.0f    // horizontal velocity controller input filter
+ # define POSCONTROL_VEL_Z_FILT_D_HZ           5.0f    // horizontal velocity controller input filter for D
+
 #endif
 
 const AP_Param::GroupInfo AC_PosControl::var_info[] = {
@@ -197,6 +215,7 @@ AC_PosControl::AC_PosControl(const AP_AHRS_View& ahrs, const AP_InertialNav& ina
     _p_pos_z(POSCONTROL_POS_Z_P),
     _p_vel_z(POSCONTROL_VEL_Z_P),
     _pid_accel_z(POSCONTROL_ACC_Z_P, POSCONTROL_ACC_Z_I, POSCONTROL_ACC_Z_D, POSCONTROL_ACC_Z_IMAX, POSCONTROL_ACC_Z_FILT_HZ, POSCONTROL_ACC_Z_DT),
+    _pid_vel_z(POSCONTROL_VEL_Z_P, POSCONTROL_VEL_Z_I, POSCONTROL_VEL_Z_D, POSCONTROL_VEL_Z_IMAX, POSCONTROL_VEL_Z_FILT_HZ, POSCONTROL_VEL_Z_FILT_D_HZ),
     _p_pos_xy(POSCONTROL_POS_XY_P),
     _pid_vel_xy(POSCONTROL_VEL_XY_P, POSCONTROL_VEL_XY_I, POSCONTROL_VEL_XY_D, POSCONTROL_VEL_XY_IMAX, POSCONTROL_VEL_XY_FILT_HZ, POSCONTROL_VEL_XY_FILT_D_HZ, POSCONTROL_DT_50HZ),
     _dt(POSCONTROL_DT_400HZ),
@@ -585,6 +604,8 @@ void AC_PosControl::run_z_controller()
         _vel_error.z = _vel_error_filter.apply(_vel_target.z - curr_vel.z, _dt);
     }
 
+    _pid_vel_z.set_input_filter_all(_vel_error.z);
+
     _accel_target.z = _p_vel_z.get_p(_vel_error.z);
 
     _accel_target.z += _accel_desired.z;
@@ -633,21 +654,14 @@ void AC_PosControl::run_z_controller()
 
     float thr_out = (p+i+d)*0.001f +_motors.get_throttle_hover();
 
-///////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////
+    
+    ADRC_POS_Z.PD = ( _pid_vel_z.get_p() + _pid_vel_z.get_d()  + 0 * _pid_vel_z.get_integrator() + _accel_desired.z ) * 0.001 ;
+    ESO_POS(&ADRC_POS_Z, ADRC_POS_Z.final_signal, curr_vel.z,10);
+    ADRC_POS_Z.final_signal = ADRC_POS_Z.PD - ADRC_POS_Z.z2/2000 ; //b0 is also very important for ESO
+    //thr_out = ADRC_POS_Z.final_signal + _motors.get_throttle_hover() ;
 
-
- if(ADRC_POS_Z.ADRC_flag == 1)
-{
-
-  ADRC_POS_Z.bais_compenseter = _motors.get_throttle_hover() ;
-  ADRC_POS_Z.gain_compenseter = 0.001f ;
-   
-  ADRC_Control_POS(&ADRC_POS_Z , _vel_target.z , curr_vel.z);
-  thr_out =  ADRC_POS_Z.u +_motors.get_throttle_hover() ;
-  
-  }
-
-///////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////
 
     // send throttle to attitude controller with angle boost
     _attitude_control.set_throttle_out(thr_out, true, POSCONTROL_THROTTLE_CUTOFF_FREQ);
@@ -1085,26 +1099,21 @@ void AC_PosControl::run_xy_controller(float dt, float ekfNavVelGainScaler)
     accel_target.x = (vel_xy_p.x + vel_xy_i.x + vel_xy_d.x) * ekfNavVelGainScaler;
     accel_target.y = (vel_xy_p.y + vel_xy_i.y + vel_xy_d.y) * ekfNavVelGainScaler;
 
-//////////////////////////////////////////////////////////////////////////////////////////
 
-    /*******ADRC output*******/
-     if(ADRC_POS_X.ADRC_flag == 1)
-     {
-      ADRC_POS_X.gain_compenseter = ekfNavVelGainScaler;
-      ADRC_POS_Y.gain_compenseter = ekfNavVelGainScaler;
-      ADRC_POS_X.bais_compenseter = _accel_desired.x;
-      ADRC_POS_Y.bais_compenseter = _accel_desired.y;
+/////////////////////////////////////////////////////////////////////////////////////////
 
-     // pass velocity error to ADRC 
-     ADRC_Control_POS( &ADRC_POS_X , _vel_target.x , _vehicle_horiz_vel.x );
-     ADRC_Control_POS( &ADRC_POS_Y , _vel_target.y , _vehicle_horiz_vel.y );
-     
-     /****** calculate XY_ADRC control signal *****/
-     // accel_target.x = ADRC_POS_X.u ;
-     // accel_target.y = ADRC_POS_Y.u ;
-     }
+    ADRC_POS_X.PD = (vel_xy_p.x + vel_xy_d.x) * ekfNavVelGainScaler;
+    ADRC_POS_Y.PD = (vel_xy_p.y + vel_xy_d.y) * ekfNavVelGainScaler;
+    ESO_POS(&ADRC_POS_X,ADRC_POS_X.final_signal, _vehicle_horiz_vel.x,1) ;
+    ESO_POS(&ADRC_POS_Y,ADRC_POS_Y.final_signal, _vehicle_horiz_vel.y,1) ;
+    ADRC_POS_X.final_signal = ADRC_POS_X.PD - ADRC_POS_X.z2/ADRC_POS_X.b0;
+    ADRC_POS_Y.final_signal = ADRC_POS_Y.PD - ADRC_POS_Y.z2/ADRC_POS_Y.b0;
+  
+   // accel_target.x = ADRC_POS_X.final_signal;
+  //  accel_target.y = ADRC_POS_Y.final_signal;
 
-//////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////
+
 
     // reset accel to current desired acceleration
      if (_flags.reset_accel_to_lean_xy) {
@@ -1121,8 +1130,8 @@ void AC_PosControl::run_xy_controller(float dt, float ekfNavVelGainScaler)
     _accel_target.y = _accel_target_filter.get().y;
 
     // Add feed forward into the target acceleration output
-    //_accel_target.x += _accel_desired.x;
-    //_accel_target.y += _accel_desired.y;
+    _accel_target.x += _accel_desired.x;
+    _accel_target.y += _accel_desired.y;
 
     // the following section converts desired accelerations provided in lat/lon frame to roll/pitch angles
 

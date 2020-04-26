@@ -69,10 +69,6 @@ Copter::Mode *Copter::mode_from_mode_num(const uint8_t mode)
             break;
 #endif
 
-        case ADRCLOITER:
-            ret = &mode_ADRCloiter;
-            break;
-
 #if MODE_GUIDED_ENABLED == ENABLED
         case GUIDED:
             ret = &mode_guided;

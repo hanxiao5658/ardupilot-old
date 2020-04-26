@@ -115,7 +115,6 @@ enum control_mode_t {
     SMART_RTL =    21,  // SMART_RTL returns to home by retracing its steps
     FLOWHOLD  =    22,  // FLOWHOLD holds position with optical flow without rangefinder
     FOLLOW    =    23,  // follow attempts to follow another vehicle or ground station
-    ADRCLOITER =   30,  // loiter wit ADRC for pos and attitude control
 };
 
 enum mode_reason_t {
@@ -316,9 +315,8 @@ enum LoggingParameters {
      LOG_HELI_MSG,
      LOG_PRECLAND_MSG,
      LOG_GUIDEDTARGET_MSG,
-     LOG_ADRC_x_MSG,
-     LOG_ADRC_y_MSG,
-     LOG_ADRC_z_MSG,
+     LOG_ADRC_att_MSG,
+
 };
 
 #define MASK_LOG_ATTITUDE_FAST          (1<<0)
