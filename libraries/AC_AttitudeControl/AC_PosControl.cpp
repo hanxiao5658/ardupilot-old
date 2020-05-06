@@ -8,14 +8,13 @@
 //ofstream ADRCfile("ADRCdata.txt");
 
 extern const AP_HAL::HAL& hal;
-extern Fhan_Data ADRCdata;
+
 
 extern POS_Fhan_Data ADRC_POS_X;
 extern POS_Fhan_Data ADRC_POS_Y;
 extern POS_Fhan_Data ADRC_POS_Z;
-extern Fhan_Data ADRCYAW;
-int cc=0;
-float temp_AL=0;
+
+
 extern const AP_HAL::HAL& hal;
 
 #if APM_BUILD_TYPE(APM_BUILD_ArduPlane)
@@ -76,7 +75,6 @@ extern const AP_HAL::HAL& hal;
  # define POSCONTROL_VEL_Z_IMAX                1000.0f // horizontal velocity controller IMAX gain default
  # define POSCONTROL_VEL_Z_FILT_HZ             5.0f    // horizontal velocity controller input filter
  # define POSCONTROL_VEL_Z_FILT_D_HZ           5.0f    // horizontal velocity controller input filter for D
-
 #endif
 
 const AP_Param::GroupInfo AC_PosControl::var_info[] = {
@@ -214,7 +212,7 @@ AC_PosControl::AC_PosControl(const AP_AHRS_View& ahrs, const AP_InertialNav& ina
     _attitude_control(attitude_control),
     _p_pos_z(POSCONTROL_POS_Z_P),
     _p_vel_z(POSCONTROL_VEL_Z_P),
-    _pid_accel_z(POSCONTROL_ACC_Z_P, POSCONTROL_ACC_Z_I, POSCONTROL_ACC_Z_D, POSCONTROL_ACC_Z_IMAX, POSCONTROL_ACC_Z_FILT_HZ, POSCONTROL_ACC_Z_DT),
+    _pid_accel_z(POSCONTROL_ACC_Z_P, POSCONTROL_ACC_Z_I, POSCONTROL_ACC_Z_D, POSCONTROL_ACC_Z_IMAX, POSCONTROL_ACC_Z_FILT_HZ, POSCONTROL_ACC_Z_DT), 
     _pid_vel_z(POSCONTROL_VEL_Z_P, POSCONTROL_VEL_Z_I, POSCONTROL_VEL_Z_D, POSCONTROL_VEL_Z_IMAX, POSCONTROL_VEL_Z_FILT_HZ, POSCONTROL_VEL_Z_FILT_D_HZ),
     _p_pos_xy(POSCONTROL_POS_XY_P),
     _pid_vel_xy(POSCONTROL_VEL_XY_P, POSCONTROL_VEL_XY_I, POSCONTROL_VEL_XY_D, POSCONTROL_VEL_XY_IMAX, POSCONTROL_VEL_XY_FILT_HZ, POSCONTROL_VEL_XY_FILT_D_HZ, POSCONTROL_DT_50HZ),
@@ -659,7 +657,7 @@ void AC_PosControl::run_z_controller()
     ADRC_POS_Z.PD = ( _pid_vel_z.get_p() + _pid_vel_z.get_d()  + 0 * _pid_vel_z.get_integrator() + _accel_desired.z ) * 0.001 ;
     ESO_POS(&ADRC_POS_Z, ADRC_POS_Z.final_signal, curr_vel.z,10);
     ADRC_POS_Z.final_signal = ADRC_POS_Z.PD - ADRC_POS_Z.z2/2000 ; //b0 is also very important for ESO
-    //thr_out = ADRC_POS_Z.final_signal + _motors.get_throttle_hover() ;
+    thr_out = ADRC_POS_Z.final_signal + _motors.get_throttle_hover() ;
 
 ///////////////////////////////////////////////////////////////////////////////////////
 
@@ -1108,13 +1106,11 @@ void AC_PosControl::run_xy_controller(float dt, float ekfNavVelGainScaler)
     ESO_POS(&ADRC_POS_Y,ADRC_POS_Y.final_signal, _vehicle_horiz_vel.y,1) ;
     ADRC_POS_X.final_signal = ADRC_POS_X.PD - ADRC_POS_X.z2/ADRC_POS_X.b0;
     ADRC_POS_Y.final_signal = ADRC_POS_Y.PD - ADRC_POS_Y.z2/ADRC_POS_Y.b0;
-  
-   // accel_target.x = ADRC_POS_X.final_signal;
-  //  accel_target.y = ADRC_POS_Y.final_signal;
+ 
+    accel_target.x = ADRC_POS_X.final_signal;
+    accel_target.y = ADRC_POS_Y.final_signal;
 
 /////////////////////////////////////////////////////////////////////////////////////////
-
-
     // reset accel to current desired acceleration
      if (_flags.reset_accel_to_lean_xy) {
          _accel_target_filter.reset(Vector2f(accel_target.x, accel_target.y));

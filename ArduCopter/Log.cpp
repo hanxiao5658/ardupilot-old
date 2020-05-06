@@ -172,48 +172,6 @@ void Copter::Log_Write_Attitude()
     }
 }
 
-
-//log ADRC_attitude
-struct PACKED log_ADRCattitude {
-    LOG_PACKET_HEADER;
-    uint64_t time_us;
-    float roll_p;
-    float roll_d;
-    float roll_z2;
-    float roll_final_signal;
-    float pitch_p;
-    float pitch_d;
-    float pitch_z2;
-    float pitch_final_signal;
-    float yaw_p;
-    float yaw_d;
-    float yaw_z2;
-    float yaw_final_signal;
-};
-
-
-// Write an ADRC Z packet
-void Copter::Log_Write_ADRCattitude()
-{
- struct log_ADRCattitude pkt = {
-        LOG_PACKET_HEADER_INIT(LOG_ADRC_att_MSG),
-        time_us         : AP_HAL::micros64(),
-        roll_p              : ADRCROLL.ADRC_P_signal,
-        roll_d              : ADRCROLL.ADRC_D_signal,
-        roll_z2             : ADRCROLL.z2,
-        roll_final_signal   : ADRCROLL.ADRC_final_signal,
-        pitch_p              : ADRCPITCH.ADRC_P_signal,
-        pitch_d              : ADRCPITCH.ADRC_D_signal,
-        pitch_z2             : ADRCPITCH.z2,
-        pitch_final_signal   : ADRCPITCH.ADRC_final_signal,
-        yaw_p              : ADRCYAW.ADRC_P_signal,
-        yaw_d              : ADRCYAW.ADRC_D_signal,
-        yaw_z2             : ADRCYAW.z2,
-        yaw_final_signal   : ADRCYAW.ADRC_final_signal,
-    };
-    DataFlash.WriteBlock(&pkt, sizeof(pkt));
-}
-
 // Write an EKF and POS packet
 void Copter::Log_Write_EKF_POS()
 {
@@ -294,7 +252,7 @@ void Copter::Log_Write_Data(uint8_t id, int16_t value)
 struct PACKED log_Data_UInt16t {
     LOG_PACKET_HEADER;
     uint64_t time_us;
-    uint8_t id;
+    uint8_t id ;          //uint8_t id;
     uint16_t data_value;
 };
 
@@ -306,7 +264,7 @@ void Copter::Log_Write_Data(uint8_t id, uint16_t value)
         struct log_Data_UInt16t pkt = {
             LOG_PACKET_HEADER_INIT(LOG_DATA_UINT16_MSG),
             time_us     : AP_HAL::micros64(),
-            id          : id,
+            id          : ADRCROLL.z2 ,//id,
             data_value  : value
         };
         DataFlash.WriteCriticalBlock(&pkt, sizeof(pkt));
@@ -419,6 +377,48 @@ void Copter::Log_Write_Parameter_Tuning(uint8_t param, float tuning_val, int16_t
     };
 
     DataFlash.WriteBlock(&pkt_tune, sizeof(pkt_tune));
+}
+
+/**/
+//log ADRC_attitude
+struct PACKED log_ADRCattitude {
+    LOG_PACKET_HEADER;
+    uint64_t time_us;
+    float roll_p;
+    float roll_d;
+    float roll_z2;
+    float roll_final_signal;
+    float pitch_p;
+    float pitch_d;
+    float pitch_z2;
+    float pitch_final_signal;
+    float yaw_p;
+    float yaw_d;
+    float yaw_z2;
+    float yaw_final_signal;
+};
+
+
+// Write an ADRC Z packet
+void Copter::Log_Write_ADRCattitude()
+{
+ struct log_ADRCattitude pkt = {
+        LOG_PACKET_HEADER_INIT(LOG_ADRC_att_MSG),
+        time_us         : AP_HAL::micros64(),
+        roll_p              : ADRCROLL.ADRC_P_signal,
+        roll_d              : ADRCROLL.ADRC_D_signal,
+        roll_z2             : ADRCROLL.z2,
+        roll_final_signal   : ADRCROLL.ADRC_final_signal,
+        pitch_p              : ADRCPITCH.ADRC_P_signal,
+        pitch_d              : ADRCPITCH.ADRC_D_signal,
+        pitch_z2             : ADRCPITCH.z2,
+        pitch_final_signal   : ADRCPITCH.ADRC_final_signal,
+        yaw_p              : ADRCYAW.ADRC_P_signal,
+        yaw_d              : ADRCYAW.ADRC_D_signal,
+        yaw_z2             : ADRCYAW.z2,
+        yaw_final_signal   : ADRCYAW.ADRC_final_signal,
+    };
+    DataFlash.WriteBlock(&pkt, sizeof(pkt));
 }
 
 // logs when baro or compass becomes unhealthy
@@ -570,8 +570,9 @@ const struct LogStructure Copter::log_structure[] = {
     { LOG_ERROR_MSG, sizeof(log_Error),         
       "ERR",   "QBB",         "TimeUS,Subsys,ECode", "s--", "F--" },
 
+/**/
     { LOG_ADRC_att_MSG, sizeof(log_ADRCattitude),
-      "ADRC",   "QBBBBBBBBBBBB",   "TimeUS,r_P,r_D,r_z2,r_fs,p_P,p_D,p_z2,p_fs,y_P,y_D,y_z2,y_fs", "s------------", "F------------" },
+      "ADRC",   "Qffffffffffff",   "TimeUS,r_P,r_D,r_z2,r_fs,p_P,p_D,p_z2,p_fs,y_P,y_D,y_z2,y_fs", "s------------", "F------------" },
 
 #if FRAME_CONFIG == HELI_FRAME
     { LOG_HELI_MSG, sizeof(log_Heli),

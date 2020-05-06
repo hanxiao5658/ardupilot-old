@@ -123,7 +123,7 @@ void ESO_ADRC(Fhan_Data *fhan_Input)
 }
 
 
-void ESO(Fhan_Data *fhan_Input, float PD_signal, float feedback_signal)
+void ESO(Fhan_Data *fhan_Input, float final_signal, float feedback_signal)
 {
 
   fhan_Input->e = fhan_Input->z1 - feedback_signal ;//状态误差
@@ -131,7 +131,7 @@ void ESO(Fhan_Data *fhan_Input, float PD_signal, float feedback_signal)
  
  /*2阶 LESO */
  float LESO_w0 = 50 ;
- fhan_Input->z1 += fhan_Input->h * ( fhan_Input->z2 - ( 2 * LESO_w0 ) * fhan_Input->e + fhan_Input->b0 * PD_signal );
+ fhan_Input->z1 += fhan_Input->h * ( fhan_Input->z2 - ( 2 * LESO_w0 ) * fhan_Input->e + fhan_Input->b0 * final_signal );
  fhan_Input->z2 += fhan_Input->h * ( - ( LESO_w0 * LESO_w0 ) * fhan_Input->e);
                                     
 
@@ -147,11 +147,14 @@ void Nolinear_Conbination_ADRC(Fhan_Data *fhan_Input)
   /*********第一种组合形式*********/
   //fhan_Input->u0=fhan_Input->beta_1*fhan_Input->e1+fhan_Input->beta_2*fhan_Input->e2+(fhan_Input->beta_0*fhan_Input->e0);
 
-  /*********第二种组合形式*********/
+  /*********第二种组合形式********
   float temp_e2=0;
   temp_e2=Constrain_Float(fhan_Input->e2,-3000,3000);
   fhan_Input->u0=fhan_Input->beta_1*Fal_ADRC(fhan_Input->e1,fhan_Input->alpha1,fhan_Input->zeta)
-                +fhan_Input->beta_2*Fal_ADRC(temp_e2,fhan_Input->alpha2,fhan_Input->zeta);
+                +fhan_Input->beta_2*Fal_ADRC(temp_e2,fhan_Input->alpha2,fhan_Input->zeta);*/
+
+  
+  fhan_Input->u0=2*fhan_Input->e1 + 0.001*fhan_Input->e2 ;
 
 }
 
@@ -171,7 +174,7 @@ float ADRC_error = expect_ADRC - feedback_ADRC ;
 
  fhan_Input->y=feedback_ADRC;      
 
- ESO_ADRC(fhan_Input); 
+ ESO(fhan_Input,fhan_Input->u,feedback_ADRC); 
 
 /*自抗扰控制器第3步*/  
 
