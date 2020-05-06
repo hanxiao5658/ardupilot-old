@@ -421,6 +421,47 @@ void Copter::Log_Write_ADRCattitude()
     DataFlash.WriteBlock(&pkt, sizeof(pkt));
 }
 
+/**/
+//log ADRC_position
+struct PACKED log_ADRCposition {
+    LOG_PACKET_HEADER;
+    uint64_t time_us;
+    float x_p;
+    float x_d;
+    float x_z2;
+    float x_final_signal;
+    float y_p;
+    float y_d;
+    float y_z2;
+    float y_final_signal;
+    float z_p;
+    float z_d;
+    float z_z2;
+    float z_final_signal;
+};
+
+
+// Write an ADRC Z packet
+void Copter::Log_Write_ADRCposition()
+{
+ struct log_ADRCposition pkt = {
+        LOG_PACKET_HEADER_INIT(LOG_ADRC_pos_MSG),
+        time_us         : AP_HAL::micros64(),
+        x_p              : ADRC_POS_X.ADRC_P_signal,
+        x_d              : ADRC_POS_X.ADRC_D_signal,
+        x_z2             : ADRC_POS_X.z2,
+        x_final_signal   : ADRC_POS_X.ADRC_final_signal,
+        y_p              : ADRC_POS_Y.ADRC_P_signal,
+        y_d              : ADRC_POS_Y.ADRC_D_signal,
+        y_z2             : ADRC_POS_Y.z2,
+        y_final_signal   : ADRC_POS_Y.ADRC_final_signal,
+        z_p              : ADRC_POS_Z.ADRC_P_signal,
+        z_d              : ADRC_POS_Z.ADRC_D_signal,
+        z_z2             : ADRC_POS_Z.z2,
+        z_final_signal   : ADRC_POS_Z.ADRC_final_signal,
+    };
+    DataFlash.WriteBlock(&pkt, sizeof(pkt));
+}
 // logs when baro or compass becomes unhealthy
 void Copter::Log_Sensor_Health()
 {
@@ -573,6 +614,10 @@ const struct LogStructure Copter::log_structure[] = {
 /**/
     { LOG_ADRC_att_MSG, sizeof(log_ADRCattitude),
       "ADRC",   "Qffffffffffff",   "TimeUS,r_P,r_D,r_z2,r_fs,p_P,p_D,p_z2,p_fs,y_P,y_D,y_z2,y_fs", "s------------", "F------------" },
+
+    { LOG_ADRC_pos_MSG, sizeof(log_ADRCposition),
+      "APOS",   "Qffffffffffff",   "TimeUS,x_P,x_D,x_z2,x_fs,y_P,y_D,y_z2,y_fs,z_P,z_D,z_z2,z_fs", "s------------", "F------------" },
+
 
 #if FRAME_CONFIG == HELI_FRAME
     { LOG_HELI_MSG, sizeof(log_Heli),

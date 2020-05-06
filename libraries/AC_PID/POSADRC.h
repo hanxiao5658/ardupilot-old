@@ -37,7 +37,7 @@ float kp = 0;
 float kd = 0;
 //float P_signal =0;
 //float D_signal =0;
-float final_signal = 0;
+
 
 
 //////////////////////////////////////////////////
@@ -49,6 +49,9 @@ float gain_compenseter = 1 ;
 float currant_altitude = 0;
 float k=1 ;//z2的系数   
 float PD=0;
+float ADRC_P_signal;
+float ADRC_D_signal;
+float ADRC_final_signal;
 /////////////////////////////////////////////////
 float actual_angle=0.0f;
 

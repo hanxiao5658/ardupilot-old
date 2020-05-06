@@ -653,11 +653,15 @@ void AC_PosControl::run_z_controller()
     float thr_out = (p+i+d)*0.001f +_motors.get_throttle_hover();
 
 ///////////////////////////////////////////////////////////////////////////////////////
-    
-    ADRC_POS_Z.PD = ( _pid_vel_z.get_p() + _pid_vel_z.get_d()  + 0 * _pid_vel_z.get_integrator() + _accel_desired.z ) * 0.001 ;
-    ESO_POS(&ADRC_POS_Z, ADRC_POS_Z.final_signal, curr_vel.z,10);
-    ADRC_POS_Z.final_signal = ADRC_POS_Z.PD - ADRC_POS_Z.z2/2000 ; //b0 is also very important for ESO
-    thr_out = ADRC_POS_Z.final_signal + _motors.get_throttle_hover() ;
+
+    ADRC_POS_Z.ADRC_P_signal = _pid_vel_z.get_p();
+    ADRC_POS_Z.ADRC_D_signal = _pid_vel_z.get_d();
+
+    ADRC_POS_Z.PD = ( _pid_vel_z.get_p() + _pid_vel_z.get_d()  + _accel_desired.z ) * 0.001 ;
+    ESO_POS(&ADRC_POS_Z, ADRC_POS_Z.ADRC_final_signal, curr_vel.z, 10.0);
+    ADRC_POS_Z.ADRC_final_signal = ADRC_POS_Z.PD - ADRC_POS_Z.z2/2000 ; //b0 is also very important for ESO
+    thr_out = ADRC_POS_Z.ADRC_final_signal + _motors.get_throttle_hover() ;
+
 
 ///////////////////////////////////////////////////////////////////////////////////////
 
@@ -1099,18 +1103,26 @@ void AC_PosControl::run_xy_controller(float dt, float ekfNavVelGainScaler)
 
 
 /////////////////////////////////////////////////////////////////////////////////////////
+    ADRC_POS_X.ADRC_P_signal = vel_xy_p.x * ekfNavVelGainScaler;
+    ADRC_POS_X.ADRC_D_signal = vel_xy_d.x * ekfNavVelGainScaler;
+    ADRC_POS_X.PD = ADRC_POS_X.ADRC_P_signal + ADRC_POS_X.ADRC_D_signal;
 
-    ADRC_POS_X.PD = (vel_xy_p.x + vel_xy_d.x) * ekfNavVelGainScaler;
-    ADRC_POS_Y.PD = (vel_xy_p.y + vel_xy_d.y) * ekfNavVelGainScaler;
-    ESO_POS(&ADRC_POS_X,ADRC_POS_X.final_signal, _vehicle_horiz_vel.x,1) ;
-    ESO_POS(&ADRC_POS_Y,ADRC_POS_Y.final_signal, _vehicle_horiz_vel.y,1) ;
-    ADRC_POS_X.final_signal = ADRC_POS_X.PD - ADRC_POS_X.z2/ADRC_POS_X.b0;
-    ADRC_POS_Y.final_signal = ADRC_POS_Y.PD - ADRC_POS_Y.z2/ADRC_POS_Y.b0;
+
+    ADRC_POS_Y.ADRC_P_signal = vel_xy_p.y * ekfNavVelGainScaler;
+    ADRC_POS_Y.ADRC_D_signal = vel_xy_d.y * ekfNavVelGainScaler;
+    ADRC_POS_Y.PD = ADRC_POS_Y.ADRC_P_signal + ADRC_POS_Y.ADRC_D_signal;
+
+    ESO_POS(&ADRC_POS_X,ADRC_POS_X.ADRC_final_signal, _vehicle_horiz_vel.x, 1.0) ;
+    ESO_POS(&ADRC_POS_Y,ADRC_POS_Y.ADRC_final_signal, _vehicle_horiz_vel.y, 1.0) ;
+
+    ADRC_POS_X.ADRC_final_signal = ADRC_POS_X.PD - ADRC_POS_X.z2/ADRC_POS_X.b0;
+    ADRC_POS_Y.ADRC_final_signal = ADRC_POS_Y.PD - ADRC_POS_Y.z2/ADRC_POS_Y.b0;
  
-    accel_target.x = ADRC_POS_X.final_signal;
-    accel_target.y = ADRC_POS_Y.final_signal;
+    accel_target.x = ADRC_POS_X.ADRC_final_signal;
+    accel_target.y = ADRC_POS_Y.ADRC_final_signal;
 
 /////////////////////////////////////////////////////////////////////////////////////////
+
     // reset accel to current desired acceleration
      if (_flags.reset_accel_to_lean_xy) {
          _accel_target_filter.reset(Vector2f(accel_target.x, accel_target.y));
