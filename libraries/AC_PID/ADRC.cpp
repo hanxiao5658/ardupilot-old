@@ -116,8 +116,8 @@ void ESO_ADRC(Fhan_Data *fhan_Input)
  
  /*2阶 LESO */
  //float LESO_w0 = 50 ;
-// fhan_Input->z1 += fhan_Input->h * ( fhan_Input->z2 - ( 2 * LESO_w0 ) * fhan_Input->e + fhan_Input->b0 * fhan_Input->u );
-// fhan_Input->z2 += fhan_Input->h * ( - ( LESO_w0 * LESO_w0 ) * fhan_Input->e);
+ //fhan_Input->z1 += fhan_Input->h * ( fhan_Input->z2 - ( 2 * LESO_w0 ) * fhan_Input->e + fhan_Input->b0 * fhan_Input->u );
+ //fhan_Input->z2 += fhan_Input->h * ( - ( LESO_w0 * LESO_w0 ) * fhan_Input->e);
                                     
 
 }
