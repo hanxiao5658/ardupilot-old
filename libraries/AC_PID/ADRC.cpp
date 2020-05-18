@@ -163,7 +163,8 @@ void ADRC_Control(Fhan_Data *fhan_Input , float expect_ADRC , float feedback_ADR
 {
 
 float ADRC_error = expect_ADRC - feedback_ADRC ;
- 
+
+ADRCYAW.k = 0; 
 
 /*自抗扰控制器第1步    TD*/
  TD_ADRC(fhan_Input , ADRC_error );
