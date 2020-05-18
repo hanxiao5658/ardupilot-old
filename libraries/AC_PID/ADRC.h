@@ -8,7 +8,7 @@ typedef struct
 /*****安排过度过程*******/
 float x1=0.0f;//跟踪微分期状态量
 float x2=0.0f;//跟踪微分期状态量微分项
-float r=1e3;//时间尺度  1e15
+float r=1e15;//时间尺度  1e15
 float h=0.0005;//ADRC系统积分时间 0.0005
 float N0=15;//跟踪微分器解决速度超调h0=N*h 15
 
