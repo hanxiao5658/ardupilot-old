@@ -106,31 +106,13 @@ void TD_ADRC(Fhan_Data *fhan_Input,float expect_ADRC)//安排ADRC过度过程
 
 
 /************扩张状态观测器********************/
-//状态观测器参数beta01=1/h  beta02=1/(3*h^2)  beta03=2/(8^2*h^3) 
-//beta 选取的不对会造成側反
-void ESO_ADRC(Fhan_Data *fhan_Input)
+void ESO(Fhan_Data *fhan_Input, float final_signal, float feedback_signal, float w0)
 {
 
-  fhan_Input->e = fhan_Input->z1 - fhan_Input->y ;//状态误差
-   
- 
+fhan_Input->e = fhan_Input->z1 - feedback_signal ;//状态误差
+
  /*2阶 LESO */
- //float LESO_w0 = 50 ;
- //fhan_Input->z1 += fhan_Input->h * ( fhan_Input->z2 - ( 2 * LESO_w0 ) * fhan_Input->e + fhan_Input->b0 * fhan_Input->u );
- //fhan_Input->z2 += fhan_Input->h * ( - ( LESO_w0 * LESO_w0 ) * fhan_Input->e);
-                                    
-
-}
-
-
-void ESO(Fhan_Data *fhan_Input, float final_signal, float feedback_signal)
-{
-
-  fhan_Input->e = fhan_Input->z1 - feedback_signal ;//状态误差
-   
- 
- /*2阶 LESO */
- float LESO_w0 = 100 ;
+ float LESO_w0 = w0 ;
  fhan_Input->z1 += fhan_Input->h * ( fhan_Input->z2 - ( 2 * LESO_w0 ) * fhan_Input->e + fhan_Input->b0 * final_signal );
  fhan_Input->z2 += fhan_Input->h * ( - ( LESO_w0 * LESO_w0 ) * fhan_Input->e);
                                     
@@ -147,8 +129,8 @@ void Nolinear_Conbination_ADRC(Fhan_Data *fhan_Input)
   /*********第一种组合形式*********/
   //fhan_Input->u0=fhan_Input->beta_1*fhan_Input->e1+fhan_Input->beta_2*fhan_Input->e2+(fhan_Input->beta_0*fhan_Input->e0);
 
-  /*********第二种组合形式*********/
-  float temp_e2=0;
+  /*********第二种组合形式*********/    
+  float temp_e2 = 0;
   temp_e2=Constrain_Float(fhan_Input->e2,-3000,3000);
   fhan_Input->u0=fhan_Input->beta_1*Fal_ADRC(fhan_Input->e1,fhan_Input->alpha1,fhan_Input->zeta)
                 +fhan_Input->beta_2*Fal_ADRC(temp_e2,fhan_Input->alpha2,fhan_Input->zeta);
@@ -169,13 +151,13 @@ ADRCYAW.k = 0;
 /*自抗扰控制器第1步    TD*/
  TD_ADRC(fhan_Input , ADRC_error );
 
-/*自抗扰控制器第2步*/
+/*自抗扰控制器第2步*/ 
 
 /****ESO****/
 
  fhan_Input->y=feedback_ADRC;      
 
- ESO(fhan_Input,fhan_Input->u,feedback_ADRC); 
+ ESO(fhan_Input,fhan_Input->u,feedback_ADRC, fhan_Input->w0); 
 
 /*自抗扰控制器第3步*/  
 

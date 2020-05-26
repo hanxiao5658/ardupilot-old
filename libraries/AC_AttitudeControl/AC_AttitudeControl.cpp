@@ -857,6 +857,7 @@ float AC_AttitudeControl::rate_target_to_motor_roll(float rate_actual_rads, floa
    //ESO(&ADRCROLL , ADRCROLL.ADRC_final_signal ,rate_actual_rads );
    //ADRCROLL.ADRC_final_signal = raw_roll_PD_control_signal - ( ADRCROLL.z2 /ADRCROLL.b0 ) ;
    //output = ADRCROLL.ADRC_final_signal ;
+     
    ADRC_Control(&ADRCROLL, rate_target_rads ,rate_actual_rads);
    output = ADRCROLL.u ;
  
@@ -895,7 +896,7 @@ float AC_AttitudeControl::rate_target_to_motor_pitch(float rate_actual_rads, flo
     //ESO(&ADRCPITCH , ADRCPITCH.ADRC_final_signal ,rate_actual_rads );
     //ADRCPITCH.ADRC_final_signal = raw_pitch_PD_control_signal - ( ADRCPITCH.z2 /ADRCPITCH.b0 ) ;
     //output = ADRCPITCH.ADRC_final_signal ;
-
+   
     ADRC_Control(&ADRCPITCH, rate_target_rads ,rate_actual_rads);
     output = ADRCPITCH.u ;
    
@@ -929,13 +930,13 @@ float AC_AttitudeControl::rate_target_to_motor_yaw(float rate_actual_rads, float
  
    ADRCYAW.ADRC_P_signal =  get_rate_yaw_pid().get_p();
    ADRCYAW.ADRC_D_signal = get_rate_yaw_pid().get_d();
-
-   //float raw_yaw_PD_control_signal = ADRCYAW.ADRC_P_signal + ADRCYAW.ADRC_D_signal ;
-   //ESO(&ADRCYAW , ADRCYAW.ADRC_final_signal ,rate_actual_rads );
-   //ADRCYAW.ADRC_final_signal = raw_yaw_PD_control_signal - ( ADRCYAW.z2 /ADRCYAW.b0 ) ;
-   //output = ADRCYAW.ADRC_final_signal ;
-
-    ADRC_Control(&ADRCYAW, rate_target_rads ,rate_actual_rads);
+   ADRCYAW.b0 = 0.5 ;
+   float raw_yaw_PD_control_signal = ADRCYAW.ADRC_P_signal + ADRCYAW.ADRC_D_signal ;
+   ESO(&ADRCYAW , ADRCYAW.ADRC_final_signal ,rate_actual_rads, 1 );
+   ADRCYAW.ADRC_final_signal = raw_yaw_PD_control_signal - ( ADRCYAW.z2 /ADRCYAW.b0 ) ;
+   output = ADRCYAW.ADRC_final_signal ;
+   
+    //ADRC_Control(&ADRCYAW, rate_target_rads ,rate_actual_rads);
     //output = ADRCYAW.u ;
   
 ////////////////////////////////////////////////////////////////////////////////////////////////

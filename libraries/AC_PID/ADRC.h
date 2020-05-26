@@ -46,6 +46,7 @@ float ADRC_final_signal = 0;
 float k=1;//z3的系数   0.0015 0.5
 float _i=0;
 int ADRC_flag = 0 ;
+float w0 = 50 ;
 
 
 }Fhan_Data;
@@ -61,10 +62,9 @@ int Sign_ADRC(float Input);
 int Fsg_ADRC(float x,float d);
 float adrc_fhan(float v1, float v2, float r0, float h0);
 float Fal_ADRC(float e,float alpha,float zeta);
-void ESO_ADRC(Fhan_Data *fhan_Input);
 void Nolinear_Conbination_ADRC(Fhan_Data *fhan_Input);
 float Fhan_ADRC(float x1_delta , float x2 ,float r , float h);
 //extern Fhan_Data ADRC_Pitch_Controller,ADRC_Roll_Controller;
-void ESO(Fhan_Data *fhan_Input, float PD_signal, float feedback_signal);
+void ESO(Fhan_Data *fhan_Input, float PD_signal, float feedback_signal, float w0);
 
 
