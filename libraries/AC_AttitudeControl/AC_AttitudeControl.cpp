@@ -848,19 +848,27 @@ float AC_AttitudeControl::rate_target_to_motor_roll(float rate_actual_rads, floa
     // Compute output in range -1 ~ +1
     float output = get_rate_roll_pid().get_p() + integrator + get_rate_roll_pid().get_d() + get_rate_roll_pid().get_ff(rate_target_rads);
     
-///////////////////////////////////////////////////////////////////////////////////////////////////  
- 
-   ADRCROLL.ADRC_P_signal =  get_rate_roll_pid().get_p();
-   ADRCROLL.ADRC_D_signal = get_rate_roll_pid().get_d();
+/////////////////////////////////////////////////////////////////////////////////////////////////// 
+    // initial parameter is defined in ADRC.h 
+    // change following parameters to tune
+    //ADRC roll speed control 
+    /*---transcient profile genertor---*/
+    //ADRCROLL.r = 1e15;
+    // h is integral step, must smaller than 0.0025 (because main loop run this program in 400hz)
+    //ADRCROLL.h = 0.0005;
 
-   //float raw_roll_PD_control_signal = ADRCROLL.ADRC_P_signal + ADRCROLL.ADRC_D_signal ;
-   //ESO(&ADRCROLL , ADRCROLL.ADRC_final_signal ,rate_actual_rads );
-   //ADRCROLL.ADRC_final_signal = raw_roll_PD_control_signal - ( ADRCROLL.z2 /ADRCROLL.b0 ) ;
-   //output = ADRCROLL.ADRC_final_signal ;
-     
+    /*---ESO parameter b0 w0---*/
+    //ADRCROLL.b0 = 500;
+    //ADRCROLL.w0 = 50;
+
+    /*---NLSEF parameter---*/ 
+    //just like PD control 
+    //ADRCROLL.beta_1 = 2;
+    //ADRCROLL.beta_2 = 0.001;
+
    ADRC_Control(&ADRCROLL, rate_target_rads ,rate_actual_rads);
    output = ADRCROLL.u ;
- 
+
 
 ////////////////////////////////////////////////////////////////////////////////////////////////  
     
@@ -888,15 +896,24 @@ float AC_AttitudeControl::rate_target_to_motor_pitch(float rate_actual_rads, flo
     // Compute output in range -1 ~ +1
     float output = get_rate_pitch_pid().get_p() + integrator + get_rate_pitch_pid().get_d() + get_rate_pitch_pid().get_ff(rate_target_rads);
     
-///////////////////////////////////////////////////////////////////////////////////////////////////   
-    ADRCPITCH.ADRC_P_signal =  get_rate_pitch_pid().get_p();
-    ADRCPITCH.ADRC_D_signal = get_rate_pitch_pid().get_d();
+/////////////////////////////////////////////////////////////////////////////////////////////////// 
+    // initial parameter is defined in ADRC.h 
+    // change following parameters to tune
+    //ADRC pitch speed control 
+    /*---transcient profile genertor---*/
+    //ADRCPITCH.r = 1e15;
+    // h is integral step, must smaller than 0.0025 (because main loop run this program in 400hz)
+    //ADRCPITCH.h = 0.0005; 
 
-    //float raw_pitch_PD_control_signal = ADRCPITCH.ADRC_P_signal + ADRCPITCH.ADRC_D_signal ;
-    //ESO(&ADRCPITCH , ADRCPITCH.ADRC_final_signal ,rate_actual_rads );
-    //ADRCPITCH.ADRC_final_signal = raw_pitch_PD_control_signal - ( ADRCPITCH.z2 /ADRCPITCH.b0 ) ;
-    //output = ADRCPITCH.ADRC_final_signal ;
-   
+    /*---ESO parameter b0 w0---*/
+    //ADRCPITCH.b0 = 500;
+    //ADRCPITCH.w0 = 50;
+
+    /*---NLSEF parameter---*/ 
+    //just like PD control 
+    //ADRCPITCH.beta_1 = 2;
+    //ADRCPITCH.beta_2 = 0.001;
+
     ADRC_Control(&ADRCPITCH, rate_target_rads ,rate_actual_rads);
     output = ADRCPITCH.u ;
    
@@ -927,15 +944,23 @@ float AC_AttitudeControl::rate_target_to_motor_yaw(float rate_actual_rads, float
     float output = get_rate_yaw_pid().get_p() + integrator + get_rate_yaw_pid().get_d() + get_rate_yaw_pid().get_ff(rate_target_rads);
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////   
- 
+   // LADRC yaw speed control
    ADRCYAW.ADRC_P_signal =  get_rate_yaw_pid().get_p();
    ADRCYAW.ADRC_D_signal = get_rate_yaw_pid().get_d();
-   ADRCYAW.b0 = 0.5 ;
    float raw_yaw_PD_control_signal = ADRCYAW.ADRC_P_signal + ADRCYAW.ADRC_D_signal ;
-   ESO(&ADRCYAW , ADRCYAW.ADRC_final_signal ,rate_actual_rads, 1 );
+
+   /*ESO only */
+   /*---ESO parameter---*/
+   ADRCYAW.b0 = 0.5;
+   ADRCYAW.w0 =  1;
+   // h is integral step, must smaller than 0.0025 (because main loop run this program in 400hz)
+   ADRCYAW.h = 0.0005;
+   
+   ESO(&ADRCYAW , ADRCYAW.ADRC_final_signal ,rate_actual_rads, ADRCYAW.w0 );
    ADRCYAW.ADRC_final_signal = raw_yaw_PD_control_signal - ( ADRCYAW.z2 /ADRCYAW.b0 ) ;
    output = ADRCYAW.ADRC_final_signal ;
    
+   //ADRC yaw speed control is not used 
     //ADRC_Control(&ADRCYAW, rate_target_rads ,rate_actual_rads);
     //output = ADRCYAW.u ;
   

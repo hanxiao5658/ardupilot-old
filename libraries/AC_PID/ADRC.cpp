@@ -14,27 +14,13 @@ Fhan_Data ADRCYAW;
 Fhan_Data ADRCdata;
 
 
-
-
-//int cc=0;
-
-//Fhan_Data ADRC_Roll_Controller;
-const float ADRC_Unit[3][16]=
-{
-/*TD跟踪微分器   改进最速TD,h0=N*h      扩张状态观测器ESO           扰动补偿     非线性组合*/
-/*  r     h      N                  beta_01   beta_02    beta_03     b0     beta_0  beta_1     beta_2     N1     C    alpha1  alpha2  zeta  b*/
- {300000 ,0.005 , 3,               300,      4000,      10000,     0.001,    0.002,   2.0,      0.0010,    5,    5,    0.8,   1.5,    50,    0},
- {300000 ,0.005 , 3,               300,      4000,      10000,     0.001,    0.002,   2.0,      0.0010,    5,    5,    0.8,   1.5,    50,    0},
- {300000 ,0.005 , 3,               300,      4000,      10000,     0.001,    0.002,   1.2,      0.0005,    5,    5,    0.8,   1.5,    50,    0},
-};
-
-
+/*---constrain funtion make sure output is not too big or too small--------*/
 float Constrain_Float(float amt, float low, float high)
 {
   return ((amt)<(low)?(low):((amt)>(high)?(high):(amt)));
 }
-
-int Sign_ADRC(float Input)//判断符号1E-6 为很小的一个数
+/*----used in transcient profile generator, no need to tune--------------*/
+int Sign_ADRC(float Input)
 {
     int output=0;
     if(Input>1E-6) output=1;
@@ -42,7 +28,7 @@ int Sign_ADRC(float Input)//判断符号1E-6 为很小的一个数
     else output=0;
     return output;
 }
-
+/*----used in transcient profile generator, no need to tune--------------*/
 int Fsg_ADRC(float x,float d)
 {
   int output=0;
@@ -50,7 +36,7 @@ int Fsg_ADRC(float x,float d)
   return output;
 }
 
-//原点附近有连线性段的连续幂次函数
+/*------ Nolinear function used in NLSEF ---------*/
 float Fal_ADRC(float e,float alpha,float zeta)
 {
     float s=0;
@@ -60,40 +46,24 @@ float Fal_ADRC(float e,float alpha,float zeta)
     return fal_output;
 }
 
-/************临时计算用fhan********************/
-float adrc_fhan(float v1, float v2, float r0, float h0)
-{
-	float d = h0 * h0 * r0;
-	float a0 = h0 * v2;
-	float y = v1 + a0;
-	float a1 = sqrtf(d*(d + 8.0f*fabsf(y)));
-	float a2 = a0 + Sign_ADRC(y)*(a1-d)*0.5f;
-	float sy = (Sign_ADRC(y+d) - Sign_ADRC(y-d))*0.5f;
-	float a = (a0 + y - a2)*sy + a2;
-	float sa = (Sign_ADRC(a+d) - Sign_ADRC(a-d))*0.5f;
-	
-	return -r0*(a/d - Sign_ADRC(a))*sa - r0*Sign_ADRC(a);
-}
-
-
-float Fhan_ADRC(float x1_delta , float x2 ,float r , float h)//安排ADRC过度过程
+/*------fhan funtion used in transcient profile generator, no need to tune---------------*/
+float Fhan_ADRC(float x1_delta , float x2 ,float r , float h)
 {
   float d = 0,a0 = 0,y = 0,a1 = 0,a2 = 0,a = 0;
-  float h0 = h;//用h0替代h，解决最速跟踪微分器速度超调问题
+  float h0 = h;
   d = r * h0 * h0;//d=rh^2;
   a0 = h0 * x2;//a0=h*x2
   y = x1_delta + a0;//y=x1+a0
   a1 = sqrtf(d * ( d + 8 * abs(y) ) );//a1=sqrt(d*(d+8*ABS(y))])
   a2 = a0 + Sign_ADRC(y) * ( a1 - d ) / 2;//a2=a0+sign(y)*(a1-d)/2;
   a =(a0+y) * Fsg_ADRC(y,d) + a2 * ( 1 - Fsg_ADRC(y,d));
-
-  //得到最速微分加速度跟踪量
+  
   return - r * (a/d) * Fsg_ADRC(a,d) - r * Sign_ADRC(a) * ( 1 - Fsg_ADRC(a,d) );
  
 }
 
 
-//ADRC最速跟踪微分器TD，改进的算法fhan
+/*------transcient profile generator, tunning parameters are h, r---------------*/
 void TD_ADRC(Fhan_Data *fhan_Input,float expect_ADRC)//安排ADRC过度过程
 {
   
@@ -105,7 +75,7 @@ void TD_ADRC(Fhan_Data *fhan_Input,float expect_ADRC)//安排ADRC过度过程
 
 
 
-/************扩张状态观测器********************/
+/*--------------ESO,tunning parameters are w0 and b0 -------------*/
 void ESO(Fhan_Data *fhan_Input, float final_signal, float feedback_signal, float w0)
 {
 
@@ -126,15 +96,21 @@ fhan_Input->e = fhan_Input->z1 - feedback_signal ;//状态误差
 
 void Nolinear_Conbination_ADRC(Fhan_Data *fhan_Input)
 {
-  /*********第一种组合形式*********/
-  //fhan_Input->u0=fhan_Input->beta_1*fhan_Input->e1+fhan_Input->beta_2*fhan_Input->e2+(fhan_Input->beta_0*fhan_Input->e0);
+// just a special kind of PD control 
+// tunning parameter is beta_1  beta_2 (like Kp Kd in PD control)
 
-  /*********第二种组合形式*********/    
   float temp_e2 = 0;
   temp_e2=Constrain_Float(fhan_Input->e2,-3000,3000);
-  fhan_Input->u0=fhan_Input->beta_1*Fal_ADRC(fhan_Input->e1,fhan_Input->alpha1,fhan_Input->zeta)
-                +fhan_Input->beta_2*Fal_ADRC(temp_e2,fhan_Input->alpha2,fhan_Input->zeta);
+  
+  // special P control. also used for logging
+  fhan_Input->ADRC_P_signal = fhan_Input->beta_1*Fal_ADRC(fhan_Input->e1,fhan_Input->alpha1,fhan_Input->zeta); 
 
+  // special D control. also used for logging
+  fhan_Input->ADRC_D_signal = fhan_Input->beta_2*Fal_ADRC(temp_e2,fhan_Input->alpha2,fhan_Input->zeta); 
+
+  //final PD control signal
+  fhan_Input->u0=fhan_Input->ADRC_P_signal + fhan_Input->ADRC_D_signal;  
+                
   
   
 
@@ -146,22 +122,17 @@ void ADRC_Control(Fhan_Data *fhan_Input , float expect_ADRC , float feedback_ADR
 
 float ADRC_error = expect_ADRC - feedback_ADRC ;
 
-ADRCYAW.k = 0; 
-
-/*自抗扰控制器第1步    TD*/
+/*ADRC step 1    TD*/
  TD_ADRC(fhan_Input , ADRC_error );
 
-/*自抗扰控制器第2步*/ 
 
-/****ESO****/
+/*ADRC step 2    ESO*/
 
  fhan_Input->y=feedback_ADRC;      
 
  ESO(fhan_Input,fhan_Input->u,feedback_ADRC, fhan_Input->w0); 
 
-/*自抗扰控制器第3步*/  
-
-/********状态误差反馈率***/
+/*ADRC step 3 NLSEF*/  
 
 fhan_Input->e1 = fhan_Input->x1 ;
 fhan_Input->e2 = fhan_Input->x2 ;
@@ -169,14 +140,15 @@ fhan_Input->e2 = fhan_Input->x2 ;
 Nolinear_Conbination_ADRC(fhan_Input);
 
  
-  /**********扰动补偿*******/
-  fhan_Input->u=fhan_Input->u0-fhan_Input->k*fhan_Input->z2/fhan_Input->b0;
-  
+/*--------- compensate for disturbance ---------*/
+fhan_Input->u=fhan_Input->u0-fhan_Input->k*fhan_Input->z2/fhan_Input->b0;
 
   
- /**********输出数据*******/
-  fhan_Input->u=Constrain_Float(fhan_Input->u,-1,1); 
-    
+/*-------output control signal --------*/
+fhan_Input->u=Constrain_Float(fhan_Input->u,-1,1); 
+
+/*----------for logging-----------*/
+fhan_Input->ADRC_final_signal = fhan_Input->u;    
   
 }
 

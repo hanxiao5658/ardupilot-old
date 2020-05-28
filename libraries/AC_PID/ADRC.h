@@ -5,48 +5,46 @@
 ///////// uint16 may mean unsigned int
 typedef struct
 {
-/*****安排过度过程*******/
-float x1=0.0f;//跟踪微分期状态量
-float x2=0.0f;//跟踪微分期状态量微分项
-float r=1e15;//时间尺度  1e15
-float h=0.0005;//ADRC系统积分时间 0.0005
-float N0=15;//跟踪微分器解决速度超调h0=N*h 15
+/*---transcient profile generator parameter---*/
+float x1=0.0f;//transcient signal x1 used to track input signal
+float x2=0.0f;//dx1/dt 
+float r=1e15;  //tunning parameter 
+float h=0.0005;//h is integral step, must smaller than 0.0025 (because main loop run this program in 400hz)
+float N0=15;
 
 float h0;
-float fh;//最速微分加速度跟踪量
+float fh;//
 
-/*****扩张状态观测器*******/
-/******已系统输出y和输入u来跟踪估计系统状态和扰动*****/
+/*---ESO---*/
 float z1;
-float z2;
-float e;//系统状态误差
-float y;//系统输出量
+float z2; // disturbance result
+float e;
+float y;  //feedback signal
+float b0=500;   //tunning parameter
+float w0 = 50;  //tunning parameter
 
-/**********系统状态误差反馈率*********/
-float e1;//状态偏差
-float e2;//状态量微分项
-float u0;//非线性组合系统输出
-float u;//带扰动补偿后的输出
-float tempu;//位置输出
-float b0=500;//扰动补偿
-/*********第二种组合形式*********/
+/*--- NLSEF paramter ---*/
+float e1; // P error
+float e2; // D error
+float u0; // PD control signal
+float u;  // final control signal with disturbance compensation
 
-float beta_1=2;//非线性组合参数 2
-float beta_2=0.001;//u0=beta_1*e1+beta_2*e2+(beta_0*e0);  0.001  
+float beta_1=2;     //tunning parameter
+float beta_2=0.001; //tunning parameter 
 
-float alpha1=0.8f;//u0=beta_1*fal(e1,alpha1,zeta)+beta_2*fal(e2,alpha2,zeta)  0.1 loaded0.25
-float alpha2=1.5f;//0<alpha1<1<alpha2?????????????  0.05   loaded0.5
-float zeta=50 ;//线性段的区间长度 50 10 15 9 13
+float alpha1=0.8f;  //u0=beta_1*fal(e1,alpha1,zeta)+beta_2*fal(e2,alpha2,zeta)  0.1 loaded0.25
+float alpha2=1.5f;  //0<alpha1<1<alpha2?????????????  0.05   loaded0.5
+float zeta=50 ;     //can be tunned if necessary, too big will act like linear function
 
-float ADRC_P_signal = 0 ;
-float ADRC_D_signal = 0 ;
-float ADRC_final_signal = 0;
+float ADRC_P_signal = 0 ;   // P control signal, also used for logging 
+float ADRC_D_signal = 0 ;   // D control signal, also used for logging
+float ADRC_final_signal = 0;// only used for logging 
 
 //////////////////////////////////////////////////
 float k=1;//z3的系数   0.0015 0.5
 float _i=0;
 int ADRC_flag = 0 ;
-float w0 = 50 ;
+
 
 
 }Fhan_Data;

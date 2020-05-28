@@ -661,7 +661,7 @@ void AC_PosControl::run_z_controller()
     ESO_POS(&ADRC_POS_Z, ADRC_POS_Z.ADRC_final_signal, curr_vel.z, 1.0);
     ADRC_POS_Z.ADRC_final_signal = ADRC_POS_Z.PD - ADRC_POS_Z.z2/ADRC_POS_Z.b0 ; //b0 is also very important for ESO
     //thr_out = ADRC_POS_Z.ADRC_final_signal + _motors.get_throttle_hover() ;
-  
+    
 
 ///////////////////////////////////////////////////////////////////////////////////////
 
@@ -1120,7 +1120,7 @@ void AC_PosControl::run_xy_controller(float dt, float ekfNavVelGainScaler)
  
     accel_target.x = ADRC_POS_X.ADRC_final_signal;
     accel_target.y = ADRC_POS_Y.ADRC_final_signal;
-  
+    
 /////////////////////////////////////////////////////////////////////////////////////////
 
     // reset accel to current desired acceleration
