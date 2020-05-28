@@ -1118,8 +1118,8 @@ void AC_PosControl::run_xy_controller(float dt, float ekfNavVelGainScaler)
     ADRC_POS_X.ADRC_final_signal = ADRC_POS_X.PD - ADRC_POS_X.z2/ADRC_POS_X.b0;
     ADRC_POS_Y.ADRC_final_signal = ADRC_POS_Y.PD - ADRC_POS_Y.z2/ADRC_POS_Y.b0;
  
-    accel_target.x = ADRC_POS_X.ADRC_final_signal;
-    accel_target.y = ADRC_POS_Y.ADRC_final_signal;
+    //accel_target.x = ADRC_POS_X.ADRC_final_signal;
+    //accel_target.y = ADRC_POS_Y.ADRC_final_signal;
   
 /////////////////////////////////////////////////////////////////////////////////////////
 
