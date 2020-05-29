@@ -653,15 +653,15 @@ void AC_PosControl::run_z_controller()
     float thr_out = (p+i+d)*0.001f +_motors.get_throttle_hover();
 
 ///////////////////////////////////////////////////////////////////////////////////////
-
-    ADRC_POS_Z.ADRC_P_signal = _pid_vel_z.get_p();
-    ADRC_POS_Z.ADRC_D_signal = _pid_vel_z.get_d();
-    ADRC_POS_Z.b0 = 0.1 ;
-    ADRC_POS_Z.PD = ( _pid_vel_z.get_p() + _pid_vel_z.get_d()  + _accel_desired.z ) * 0.001 ;
-    ESO_POS(&ADRC_POS_Z, ADRC_POS_Z.ADRC_final_signal, curr_vel.z, 1.0);
-    ADRC_POS_Z.ADRC_final_signal = ADRC_POS_Z.PD - ADRC_POS_Z.z2/ADRC_POS_Z.b0 ; //b0 is also very important for ESO
-    //thr_out = ADRC_POS_Z.ADRC_final_signal + _motors.get_throttle_hover() ;
     
+    ADRC_POS_Z.b0 = 1;
+    ADRC_POS_Z.ADRC_P_signal = _pid_vel_z.get_p() + _accel_desired.z;
+    ADRC_POS_Z.ADRC_D_signal = _pid_vel_z.get_d();
+    ADRC_POS_Z.PD = ADRC_POS_Z.ADRC_P_signal + ADRC_POS_Z.ADRC_D_signal;
+    ESO_POS(&ADRC_POS_Z, ADRC_POS_Z.ADRC_final_signal, curr_vel.z, 10.0);
+    ADRC_POS_Z.ADRC_final_signal = ( ADRC_POS_Z.PD -  ADRC_POS_Z.z2/ADRC_POS_Z.b0 )* 0.001; //b0 is also very important for ESO
+    thr_out = ADRC_POS_Z.ADRC_final_signal + _motors.get_throttle_hover() ;
+      
 
 ///////////////////////////////////////////////////////////////////////////////////////
 
@@ -1119,7 +1119,7 @@ void AC_PosControl::run_xy_controller(float dt, float ekfNavVelGainScaler)
     ADRC_POS_Y.ADRC_final_signal = ADRC_POS_Y.PD - ADRC_POS_Y.z2/ADRC_POS_Y.b0;
  
     accel_target.x = ADRC_POS_X.ADRC_final_signal;
-    accel_target.y = ADRC_POS_Y.ADRC_final_signal;
+    accel_target.y = ADRC_POS_Y.ADRC_final_signal;   
     
 /////////////////////////////////////////////////////////////////////////////////////////
 
