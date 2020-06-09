@@ -853,7 +853,7 @@ float AC_AttitudeControl::rate_target_to_motor_roll(float rate_actual_rads, floa
     // change following parameters to tune
     //ADRC roll speed control 
     /*---transcient profile genertor---*/
-    //ADRCROLL.r = 1e15;
+    //ADRCROLL.r = 1e9;
     // h is integral step, must smaller than 0.0025 (because main loop run this program in 400hz)
     //ADRCROLL.h = 0.0005;
 
@@ -901,7 +901,7 @@ float AC_AttitudeControl::rate_target_to_motor_pitch(float rate_actual_rads, flo
     // change following parameters to tune
     //ADRC pitch speed control 
     /*---transcient profile genertor---*/
-    //ADRCPITCH.r = 1e15;
+    //ADRCPITCH.r = 1e9;
     // h is integral step, must smaller than 0.0025 (because main loop run this program in 400hz)
     //ADRCPITCH.h = 0.0005; 
 

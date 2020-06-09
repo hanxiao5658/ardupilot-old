@@ -8,7 +8,7 @@ typedef struct
 /*---transcient profile generator parameter---*/
 float x1=0.0f;//transcient signal x1 used to track input signal
 float x2=0.0f;//dx1/dt 
-float r=1e15;  //tunning parameter 
+float r=1e9;  //tunning parameter 
 float h=0.0005;//h is integral step, must smaller than 0.0025 (because main loop run this program in 400hz)
 float N0=15;
 
