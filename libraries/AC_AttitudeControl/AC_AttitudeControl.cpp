@@ -914,9 +914,9 @@ float AC_AttitudeControl::rate_target_to_motor_pitch(float rate_actual_rads, flo
     //ADRCPITCH.beta_1 = 2;
     //ADRCPITCH.beta_2 = 0.001;
 
-    ADRC_Control(&ADRCPITCH, rate_target_rads ,rate_actual_rads);
-    output = ADRCPITCH.u ;
-   
+    ADRC_Control(&ADRCPITCH, rate_target_rads ,rate_actual_rads);   
+    output = ADRCPITCH.u ;    
+     
 ////////////////////////////////////////////////////////////////////////////////////////////////
 
     // Constrain output
