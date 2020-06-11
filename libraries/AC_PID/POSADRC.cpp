@@ -101,6 +101,20 @@ void ESO_POS(POS_Fhan_Data *fhan_Input, float PD_signal, float feedback_signal ,
 
 }
 
+void first_order_ESO_POS(POS_Fhan_Data *fhan_Input, float final_signal, float feedback_signal ,float w0 )
+{
+
+  fhan_Input->e = fhan_Input->z1 - feedback_signal ;//状态误差
+  
+ 
+ /*1阶 LESO */
+ float LESO_w0 = w0 ;
+ fhan_Input->z2 += fhan_Input->h * w0 * ( feedback_signal- fhan_Input->b0 * final_signal - fhan_Input->z2) ;
+                                   
+
+}
+
+
 //LSEF is just a special PD control
 /************LSEF********************/
 void linear_Conbination_ADRC_POS(POS_Fhan_Data *fhan_Input)
