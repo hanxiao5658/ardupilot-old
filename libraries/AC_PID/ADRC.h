@@ -20,7 +20,7 @@ float z1;
 float z2; // disturbance result
 float e;
 float y;  //feedback signal
-float b0=500;   //tunning parameter
+float b0= 500;   //tunning parameter
 float w0 = 50;  //tunning parameter
 
 /*--- NLSEF paramter ---*/
@@ -42,6 +42,7 @@ float ADRC_final_signal = 0;// only used for logging
 
 //////////////////////////////////////////////////
 float k=1;//z3的系数   0.0015 0.5
+float target_signal = 0;
 float _i=0;
 int ADRC_flag = 0 ;
 
@@ -64,5 +65,6 @@ void Nolinear_Conbination_ADRC(Fhan_Data *fhan_Input);
 float Fhan_ADRC(float x1_delta , float x2 ,float r , float h);
 //extern Fhan_Data ADRC_Pitch_Controller,ADRC_Roll_Controller;
 void ESO(Fhan_Data *fhan_Input, float PD_signal, float feedback_signal, float w0);
+void linear_Conbination_ADRC(Fhan_Data *fhan_Input);
 
 

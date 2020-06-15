@@ -797,6 +797,7 @@ private:
     void Log_Write_Attitude();
     void Log_Write_ADRCattitude();
     void Log_Write_ADRCposition();
+    void Log_Write_ADRCTD();
     void Log_Write_EKF_POS();
     void Log_Write_MotBatt();
     void Log_Write_Event(uint8_t id);

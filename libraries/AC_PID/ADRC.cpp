@@ -110,17 +110,32 @@ void Nolinear_Conbination_ADRC(Fhan_Data *fhan_Input)
 
   //final PD control signal
   fhan_Input->u0=fhan_Input->ADRC_P_signal + fhan_Input->ADRC_D_signal;  
-                
-  
-  
 
 }
 
 
+void linear_Conbination_ADRC(Fhan_Data *fhan_Input)
+{
+// just a special kind of PD control 
+// tunning parameter is beta_1  beta_2 (like Kp Kd in PD control)
+
+
+  // special P control. also used for logging
+  fhan_Input->ADRC_P_signal = fhan_Input->beta_1 * fhan_Input->e1; 
+
+  // special D control. also used for logging
+  fhan_Input->ADRC_D_signal = fhan_Input->beta_2 * fhan_Input->e2; 
+
+  //final PD control signal
+  fhan_Input->u0=fhan_Input->ADRC_P_signal + fhan_Input->ADRC_D_signal;  
+
+}
+
 void ADRC_Control(Fhan_Data *fhan_Input , float expect_ADRC , float feedback_ADRC)
 {
 
-float ADRC_error = expect_ADRC - feedback_ADRC ;
+fhan_Input->target_signal = expect_ADRC - feedback_ADRC ;
+float ADRC_error = fhan_Input->target_signal ;
 
 /*ADRC step 1    TD*/
  TD_ADRC(fhan_Input , ADRC_error );
@@ -139,6 +154,7 @@ fhan_Input->e2 = fhan_Input->x2 ;
 
 Nolinear_Conbination_ADRC(fhan_Input);
 
+//linear_Conbination_ADRC(fhan_Input);
  
 /*--------- compensate for disturbance ---------*/
 fhan_Input->u=fhan_Input->u0-fhan_Input->k*fhan_Input->z2/fhan_Input->b0;

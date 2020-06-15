@@ -264,7 +264,7 @@ void Copter::Log_Write_Data(uint8_t id, uint16_t value)
         struct log_Data_UInt16t pkt = {
             LOG_PACKET_HEADER_INIT(LOG_DATA_UINT16_MSG),
             time_us     : AP_HAL::micros64(),
-            id          : ADRCROLL.z2 ,//id,
+            id          : id,
             data_value  : value
         };
         DataFlash.WriteCriticalBlock(&pkt, sizeof(pkt));
@@ -462,6 +462,37 @@ void Copter::Log_Write_ADRCposition()
     };
     DataFlash.WriteBlock(&pkt, sizeof(pkt));
 }
+
+/**/
+// Write an ADRC TD packet
+struct PACKED log_ADRCTD {
+    LOG_PACKET_HEADER;
+    uint64_t time_us;
+    float roll_target;
+    float roll_v1;
+    float roll_v2;
+    float pitch_target;
+    float pitch_v1;
+    float pitch_v2;
+
+};
+
+void Copter::Log_Write_ADRCTD()
+{
+ struct log_ADRCTD pkt = {
+        LOG_PACKET_HEADER_INIT(LOG_ADRC_TD_MSG),
+        time_us         : AP_HAL::micros64(),
+        roll_target             : ADRCROLL.target_signal,
+        roll_v1                 : ADRCROLL.x1,
+        roll_v2                 : ADRCROLL.x2,
+        pitch_target            : ADRCPITCH.target_signal,
+        pitch_v1                : ADRCPITCH.x1,
+        pitch_v2                : ADRCPITCH.x2,
+        
+    };
+    DataFlash.WriteBlock(&pkt, sizeof(pkt));
+}
+
 // logs when baro or compass becomes unhealthy
 void Copter::Log_Sensor_Health()
 {
@@ -618,6 +649,8 @@ const struct LogStructure Copter::log_structure[] = {
     { LOG_ADRC_pos_MSG, sizeof(log_ADRCposition),
       "APOS",   "Qffffffffffff",   "TimeUS,x_P,x_D,x_z2,x_fs,y_P,y_D,y_z2,y_fs,z_P,z_D,z_z2,z_fs", "s------------", "F------------" },
 
+    { LOG_ADRC_TD_MSG, sizeof(log_ADRCTD),
+      "ATD",   "Qffffff",   "TimeUS,r_t,r_v1,r_v2,p_t,p_v1,p_v2", "s------", "F------" },
 
 #if FRAME_CONFIG == HELI_FRAME
     { LOG_HELI_MSG, sizeof(log_Heli),

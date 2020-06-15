@@ -70,5 +70,6 @@ void ESO_ADRC_POS(POS_Fhan_Data *fhan_Input);
 float Fhan_ADRC_POS(float x1_delta , float x2 ,float r , float h);
 void linear_Conbination_ADRC_POS(POS_Fhan_Data *fhan_Input);
 void ESO_POS(POS_Fhan_Data *fhan_Input, float PD_signal, float feedback_signal ,float w0 );
+void first_order_ESO_POS(POS_Fhan_Data *fhan_Input, float final_signal, float feedback_signal ,float w0 );
 
 
