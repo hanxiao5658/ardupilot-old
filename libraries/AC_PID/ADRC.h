@@ -11,9 +11,17 @@ float x2=0.0f;//dx1/dt
 float r=1e9;  //tunning parameter 
 float h=0.0005;//h is integral step, must smaller than 0.0025 (because main loop run this program in 400hz)
 float N0=15;
-
 float h0;
 float fh;//
+
+/*--- TD filter ---*/
+float x11=0.0f;//transcient signal x1 used to track input signal
+float x22=0.0f;//dx1/dt 
+float r1=1e9;  //tunning parameter 
+float h1=0.0005;//h is integral step, must smaller than 0.0025 (because main loop run this program in 400hz)
+float N01=15;
+float h01;
+float fh1;//
 
 /*---ESO---*/
 float z1;
