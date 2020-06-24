@@ -74,5 +74,6 @@ float Fhan_ADRC(float x1_delta , float x2 ,float r , float h);
 //extern Fhan_Data ADRC_Pitch_Controller,ADRC_Roll_Controller;
 void ESO(Fhan_Data *fhan_Input, float PD_signal, float feedback_signal, float w0);
 void linear_Conbination_ADRC(Fhan_Data *fhan_Input);
+void TD_filter(Fhan_Data *fhan_Input,float target_signal);
 
 
