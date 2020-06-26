@@ -863,8 +863,8 @@ float AC_AttitudeControl::rate_target_to_motor_roll(float rate_actual_rads, floa
 
     /*---NLSEF parameter---*/ 
     //just like PD control 
-    ADRCROLL.beta_1 = 0.1;
-    ADRCROLL.beta_2 = 0.0002;
+    ADRCROLL.beta_1 = 0.2;
+    ADRCROLL.beta_2 = 0.0001;
 
     ADRC_Control(&ADRCROLL, rate_target_rads ,rate_actual_rads);
     output = ADRCROLL.u ;
@@ -921,8 +921,8 @@ float AC_AttitudeControl::rate_target_to_motor_pitch(float rate_actual_rads, flo
 
     /*---NLSEF parameter---*/ 
     //just like PD control 
-    ADRCPITCH.beta_1 = 0.1;
-    ADRCPITCH.beta_2 = 0.0002;
+    ADRCPITCH.beta_1 = 0.2;
+    ADRCPITCH.beta_2 = 0.0001;
 
     ADRC_Control(&ADRCPITCH, rate_target_rads ,rate_actual_rads);   
     output = ADRCPITCH.u ;    
