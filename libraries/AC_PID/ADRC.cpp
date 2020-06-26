@@ -87,11 +87,11 @@ void TD_filter(Fhan_Data *fhan_Input,float target_signal)// this is useless
 /*--------------ESO,tunning parameters are w0 and b0 -------------*/
 void ESO(Fhan_Data *fhan_Input, float final_signal, float feedback_signal, float w0)
 {
-  //TD_filter(fhan_Input , feedback_signal );
+  TD_filter(fhan_Input , feedback_signal );
  
- //fhan_Input->e = fhan_Input->z1 - fhan_Input->x11 ;//TD filter
+ fhan_Input->e = fhan_Input->z1 - fhan_Input->x11 ;//TD filter
 
- fhan_Input->e = fhan_Input->z1 - feedback_signal ;
+ //fhan_Input->e = fhan_Input->z1 - feedback_signal ;
 
  /*2阶 LESO */
  float LESO_w0 = w0 ;
