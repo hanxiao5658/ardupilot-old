@@ -646,7 +646,7 @@ void AC_PosControl::run_z_controller()
     ADRC_POS_Z.PD = ADRC_POS_Z.ADRC_P_signal + ADRC_POS_Z.ADRC_D_signal ;
     first_order_ESO_POS(&ADRC_POS_Z, ADRC_POS_Z.ADRC_final_signal, z_accel_meas, 40.0);
     ADRC_POS_Z.ADRC_final_signal = ( ADRC_POS_Z.PD -  ADRC_POS_Z.z2/ADRC_POS_Z.b0 )* 0.001; //b0 is also very important for ESO
-    //thr_out = ADRC_POS_Z.ADRC_final_signal + _motors.get_throttle_hover() ;
+    thr_out = ADRC_POS_Z.ADRC_final_signal + _motors.get_throttle_hover() ;
       
  
 ///////////////////////////////////////////////////////////////////////////////////////
