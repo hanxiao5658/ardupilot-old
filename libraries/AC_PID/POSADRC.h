@@ -31,7 +31,7 @@ float e1;//状态偏差
 float e2;//状态量微分项
 float u0;//非线性组合系统输出
 float u;//带扰动补偿后的输出
-float b0=2;//扰动补偿
+float b0=10;//扰动补偿
 
 float kp = 0;
 float kd = 0;

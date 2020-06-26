@@ -74,7 +74,7 @@ void TD_ADRC(Fhan_Data *fhan_Input,float expect_ADRC)//安排ADRC过度过程
 }
 
 /*------transcient profile generator, tunning parameters are h, r---------------*/
-void TD_filter(Fhan_Data *fhan_Input,float target_signal)//安排ADRC过度过程
+void TD_filter(Fhan_Data *fhan_Input,float target_signal)// this is useless
 {
   
   fhan_Input->fh1 = Fhan_ADRC( fhan_Input->x11 - target_signal , fhan_Input->x22, fhan_Input->r1, fhan_Input->h1);
@@ -87,11 +87,11 @@ void TD_filter(Fhan_Data *fhan_Input,float target_signal)//安排ADRC过度过�
 /*--------------ESO,tunning parameters are w0 and b0 -------------*/
 void ESO(Fhan_Data *fhan_Input, float final_signal, float feedback_signal, float w0)
 {
-  TD_filter(fhan_Input , feedback_signal );
+  //TD_filter(fhan_Input , feedback_signal );
  
- fhan_Input->e = fhan_Input->z1 - fhan_Input->x11 ;//TD filter
+ //fhan_Input->e = fhan_Input->z1 - fhan_Input->x11 ;//TD filter
 
- //fhan_Input->e = fhan_Input->z1 - feedback_signal ;
+ fhan_Input->e = fhan_Input->z1 - feedback_signal ;
 
  /*2阶 LESO */
  float LESO_w0 = w0 ;
@@ -112,7 +112,7 @@ void Nolinear_Conbination_ADRC(Fhan_Data *fhan_Input)
 // tunning parameter is beta_1  beta_2 (like Kp Kd in PD control)
 
   float temp_e2 = 0;
-  temp_e2=Constrain_Float(fhan_Input->e2,-3000,3000);
+  temp_e2=Constrain_Float(fhan_Input->e2,-8000,8000);
   
   // special P control. also used for logging
   fhan_Input->ADRC_P_signal = fhan_Input->beta_1*Fal_ADRC(fhan_Input->e1,fhan_Input->alpha1,fhan_Input->zeta); 

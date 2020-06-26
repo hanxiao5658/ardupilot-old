@@ -863,11 +863,11 @@ float AC_AttitudeControl::rate_target_to_motor_roll(float rate_actual_rads, floa
 
     /*---NLSEF parameter---*/ 
     //just like PD control 
-    //ADRCROLL.beta_1 = 0.135;
-    //ADRCROLL.beta_2 = 0.003;
+    ADRCROLL.beta_1 = 0.1;
+    ADRCROLL.beta_2 = 0.0002;
 
-   ADRC_Control(&ADRCROLL, rate_target_rads ,rate_actual_rads);
-   output = ADRCROLL.u ;
+    ADRC_Control(&ADRCROLL, rate_target_rads ,rate_actual_rads);
+    output = ADRCROLL.u ;
     
 ////////////////////////////////////////////////////////////////////////////////////////////////
 //*******  LADRC  **************************************************************
@@ -921,8 +921,8 @@ float AC_AttitudeControl::rate_target_to_motor_pitch(float rate_actual_rads, flo
 
     /*---NLSEF parameter---*/ 
     //just like PD control 
-    //ADRCPITCH.beta_1 = 0.26;
-    //ADRCPITCH.beta_2 = 0.008;
+    ADRCPITCH.beta_1 = 0.1;
+    ADRCPITCH.beta_2 = 0.0002;
 
     ADRC_Control(&ADRCPITCH, rate_target_rads ,rate_actual_rads);   
     output = ADRCPITCH.u ;    
@@ -937,7 +937,7 @@ float AC_AttitudeControl::rate_target_to_motor_pitch(float rate_actual_rads, flo
     ESO(&ADRCPITCH , ADRCPITCH.ADRC_final_signal ,rate_actual_rads, ADRCPITCH.w0);
     ADRCPITCH.ADRC_final_signal = raw_pitch_PD_control_signal - ( ADRCPITCH.z2 /ADRCPITCH.b0 ) ;
     output = ADRCPITCH.ADRC_final_signal ;
- */ 
+*/  
 ////////////////////////////////////////////////////////////////////////////////////////////////
 
     // Constrain output
@@ -965,6 +965,7 @@ float AC_AttitudeControl::rate_target_to_motor_yaw(float rate_actual_rads, float
     float output = get_rate_yaw_pid().get_p() + integrator + get_rate_yaw_pid().get_d() + get_rate_yaw_pid().get_ff(rate_target_rads);
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////   
+/**/  
    // LADRC yaw speed control
    ADRCYAW.ADRC_P_signal =  get_rate_yaw_pid().get_p();
    ADRCYAW.ADRC_D_signal = get_rate_yaw_pid().get_d();
