@@ -858,7 +858,7 @@ float AC_AttitudeControl::rate_target_to_motor_roll(float rate_actual_rads, floa
     //ADRCROLL.h = 0.0005;
 
     /*---ESO parameter b0 w0---*/
-    ADRCROLL.b0 = 200;
+    ADRCROLL.b0 = 300;
     ADRCROLL.w0 = 50;
 
     /*---NLSEF parameter---*/ 
@@ -916,7 +916,7 @@ float AC_AttitudeControl::rate_target_to_motor_pitch(float rate_actual_rads, flo
     //ADRCPITCH.h = 0.0005; 
 
     /*---ESO parameter b0 w0---*/
-    ADRCPITCH.b0 = 200;
+    ADRCPITCH.b0 = 300;
     ADRCPITCH.w0 = 50;
 
     /*---NLSEF parameter---*/ 
