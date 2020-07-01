@@ -386,10 +386,12 @@ struct PACKED log_ADRCattitude {
     uint64_t time_us;
     float roll_p;
     float roll_d;
+    float roll_z1;
     float roll_z2;
     float roll_final_signal;
     float pitch_p;
     float pitch_d;
+    float pitch_z1;
     float pitch_z2;
     float pitch_final_signal;
     float yaw_p;
@@ -407,10 +409,12 @@ void Copter::Log_Write_ADRCattitude()
         time_us         : AP_HAL::micros64(),
         roll_p              : ADRCROLL.ADRC_P_signal,
         roll_d              : ADRCROLL.ADRC_D_signal,
+        roll_z1             : ADRCROLL.z1,
         roll_z2             : ADRCROLL.z2/ADRCROLL.b0,
         roll_final_signal   : ADRCROLL.ADRC_final_signal,
         pitch_p              : ADRCPITCH.ADRC_P_signal,
         pitch_d              : ADRCPITCH.ADRC_D_signal,
+        pitch_z1             : ADRCPITCH.z1,
         pitch_z2             : ADRCPITCH.z2/ADRCPITCH.b0,
         pitch_final_signal   : ADRCPITCH.ADRC_final_signal,
         yaw_p              : ADRCYAW.ADRC_P_signal,
@@ -468,10 +472,14 @@ void Copter::Log_Write_ADRCposition()
 struct PACKED log_ADRCTD {
     LOG_PACKET_HEADER;
     uint64_t time_us;
-    float roll_target;
+    float roll_target_rate;
+    float roll_actual_rate;
+    float roll_TD_target;
     float roll_v1;
     float roll_v2;
-    float pitch_target;
+    float pitch_target_rate;
+    float pitch_actual_rate;
+    float pitch_TD_target;
     float pitch_v1;
     float pitch_v2;
 
@@ -482,10 +490,14 @@ void Copter::Log_Write_ADRCTD()
  struct log_ADRCTD pkt = {
         LOG_PACKET_HEADER_INIT(LOG_ADRC_TD_MSG),
         time_us         : AP_HAL::micros64(),
-        roll_target             : ADRCROLL.target_signal,
+        roll_target_rate             : ADRCROLL.target_velocity,
+        roll_actual_rate             : ADRCROLL.actual_velocity,
+        roll_TD_target             : ADRCROLL.target_signal,
         roll_v1                 : ADRCROLL.x1,
         roll_v2                 : ADRCROLL.x2,
-        pitch_target            : ADRCPITCH.target_signal,
+        pitch_target_rate             : ADRCPITCH.target_velocity,
+        pitch_actual_rate             : ADRCPITCH.actual_velocity,
+        pitch_TD_target            : ADRCPITCH.target_signal,
         pitch_v1                : ADRCPITCH.x1,
         pitch_v2                : ADRCPITCH.x2,
         
@@ -644,13 +656,13 @@ const struct LogStructure Copter::log_structure[] = {
 
 /**/
     { LOG_ADRC_att_MSG, sizeof(log_ADRCattitude),
-      "ADRC",   "Qffffffffffff",   "TimeUS,r_P,r_D,r_z2,r_fs,p_P,p_D,p_z2,p_fs,y_P,y_D,y_z2,y_fs", "s------------", "F------------" },
+      "ADRC",   "Qffffffffffffff",   "TimeUS,r_P,r_D,r_z1,r_z2,r_fs,p_P,p_D,p_z1,p_z2,p_fs,y_P,y_D,y_z2,y_fs", "s------------", "F------------" },
 
     { LOG_ADRC_pos_MSG, sizeof(log_ADRCposition),
       "APOS",   "Qffffffffffff",   "TimeUS,x_P,x_D,x_z2,x_fs,y_P,y_D,y_z2,y_fs,z_P,z_D,z_z2,z_fs", "s------------", "F------------" },
 
     { LOG_ADRC_TD_MSG, sizeof(log_ADRCTD),
-      "ATD",   "Qffffff",   "TimeUS,r_t,r_v1,r_v2,p_t,p_v1,p_v2", "s------", "F------" },
+      "ATD",   "Qffffffffff",   "TimeUS,r_tr,r_ar,r_t,r_v1,r_v2,p_tr,p_ar,p_t,p_v1,p_v2", "s----------", "F----------" },
 
 #if FRAME_CONFIG == HELI_FRAME
     { LOG_HELI_MSG, sizeof(log_Heli),

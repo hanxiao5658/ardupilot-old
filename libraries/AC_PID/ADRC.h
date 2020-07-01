@@ -51,6 +51,8 @@ float ADRC_final_signal = 0;// only used for logging
 //////////////////////////////////////////////////
 float k=1;//z3的系数   0.0015 0.5
 float target_signal = 0;
+float actual_velocity = 0;
+float target_velocity = 0;
 float _i=0;
 int ADRC_flag = 0 ;
 

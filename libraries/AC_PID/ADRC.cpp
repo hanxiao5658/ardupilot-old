@@ -67,7 +67,7 @@ float Fhan_ADRC(float x1_delta , float x2 ,float r , float h)
 void TD_ADRC(Fhan_Data *fhan_Input,float expect_ADRC)//安排ADRC过度过程
 {
   
-  fhan_Input->fh =Fhan_ADRC( fhan_Input->x1 - expect_ADRC , fhan_Input->x2, fhan_Input->r, fhan_Input->h);
+  fhan_Input->fh =Fhan_ADRC( fhan_Input->x1 - expect_ADRC , fhan_Input->x2, fhan_Input->r, 5 * fhan_Input->h);
   fhan_Input->x1 += fhan_Input->h*fhan_Input->x2;//跟新最速跟踪状态量x1
   fhan_Input->x2 += fhan_Input->h*fhan_Input->fh;//跟新最速跟踪状态量微分x2
   
@@ -87,11 +87,11 @@ void TD_filter(Fhan_Data *fhan_Input,float target_signal)// this is useless
 /*--------------ESO,tunning parameters are w0 and b0 -------------*/
 void ESO(Fhan_Data *fhan_Input, float final_signal, float feedback_signal, float w0)
 {
-  TD_filter(fhan_Input , feedback_signal );
+  //TD_filter(fhan_Input , feedback_signal );
  
- fhan_Input->e = fhan_Input->z1 - fhan_Input->x11 ;//TD filter
+ //fhan_Input->e = fhan_Input->z1 - fhan_Input->x11 ;//TD filter
 
- //fhan_Input->e = fhan_Input->z1 - feedback_signal ;
+ fhan_Input->e = fhan_Input->z1 - feedback_signal ;
 
  /*2阶 LESO */
  float LESO_w0 = w0 ;
@@ -146,7 +146,10 @@ void linear_Conbination_ADRC(Fhan_Data *fhan_Input)
 void ADRC_Control(Fhan_Data *fhan_Input , float expect_ADRC , float feedback_ADRC)
 {
 
+fhan_Input->target_velocity = expect_ADRC;
+fhan_Input->actual_velocity = feedback_ADRC;
 fhan_Input->target_signal = expect_ADRC - feedback_ADRC ;
+
 float ADRC_error = fhan_Input->target_signal ;
 
 /*ADRC step 1    TD*/
