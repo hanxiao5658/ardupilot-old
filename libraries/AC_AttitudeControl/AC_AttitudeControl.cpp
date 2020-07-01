@@ -1,6 +1,7 @@
 #include "AC_AttitudeControl.h"
 #include <AP_HAL/AP_HAL.h>
 #include <AP_Math/AP_Math.h>
+#include <RC_Channel/RC_Channel.h>
 //#include <fstream>
 //#include <iostream>
 //using namespace std;
@@ -867,8 +868,12 @@ float AC_AttitudeControl::rate_target_to_motor_roll(float rate_actual_rads, floa
     ADRCROLL.beta_2 = 0.0006; //0.0005 is the best
 
     ADRC_Control(&ADRCROLL, rate_target_rads ,rate_actual_rads);
-    output = ADRCROLL.u ;
-    
+
+    uint16_t radio_in = RC_Channels::rc_channel(8)->get_radio_in();
+    if (radio_in > 1700)
+    {
+        output = ADRCROLL.u ;
+    }
 ////////////////////////////////////////////////////////////////////////////////////////////////
 //*******  LADRC  **************************************************************
 /*   
@@ -925,8 +930,11 @@ float AC_AttitudeControl::rate_target_to_motor_pitch(float rate_actual_rads, flo
     ADRCPITCH.beta_2 = 0.0006; //0.0005 is the best
 
     ADRC_Control(&ADRCPITCH, rate_target_rads ,rate_actual_rads);   
-    output = ADRCPITCH.u ;    
-    
+    uint16_t radio_in = RC_Channels::rc_channel(8)->get_radio_in();
+    if (radio_in > 1700)
+    {
+        output = ADRCPITCH.u ;    
+    }
 ////////////////////////////////////////////////////////////////////////////////////////////////
 //*******  LADRC  **************************************************************
 /*  
