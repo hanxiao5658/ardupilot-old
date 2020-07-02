@@ -176,6 +176,68 @@ const AP_Param::GroupInfo AC_AttitudeControl::var_info[] = {
     // @User: Standard
     AP_GROUPINFO("ADRC_Y_CH", 23, AC_AttitudeControl, _adrc_pid_y_ch, 0),
 
+    // @Param: ADRC_R_B0
+    // @DisplayName: ADRC ROLL b0
+    // @Description: ADRC ROLL b0
+    // @User: Standard
+    AP_GROUPINFO("ADRC_R_B0", 24, AC_AttitudeControl, _adrc_r_b0, 300),
+
+    // @Param: ADRC_R_W0
+    // @DisplayName: ADRC ROLL w0
+    // @Description: ADRC ROLL w0
+    // @User: Standard
+    AP_GROUPINFO("ADRC_R_W0", 25, AC_AttitudeControl, _adrc_r_w0, 50),
+
+    // @Param: ADRC_R_B1
+    // @DisplayName: ADRC ROLL beta1
+    // @Description: ADRC ROLL beta1
+    // @Range: 7 14
+    // @User: Standard
+    AP_GROUPINFO("ADRC_R_B1", 26, AC_AttitudeControl, _adrc_r_beta1, 0.3),
+
+    // @Param: ADRC_R_B2
+    // @DisplayName: ADRC ROLL beta2
+    // @Description: ADRC ROLL beta2
+    // @Range: 7 14
+    // @User: Standard
+    AP_GROUPINFO("ADRC_R_B2", 27, AC_AttitudeControl, _adrc_r_beta2, 0.0006),
+
+    // @Param: ADRC_P_B0
+    // @DisplayName: ADRC PITCH b0
+    // @Description: ADRC PITCH b0
+    // @User: Standard
+    AP_GROUPINFO("ADRC_P_B0", 28, AC_AttitudeControl, _adrc_p_b0, 300),
+
+    // @Param: ADRC_P_W0
+    // @DisplayName: ADRC PITCH w0
+    // @Description: ADRC PITCH w0
+    // @User: Standard
+    AP_GROUPINFO("ADRC_P_W0", 29, AC_AttitudeControl, _adrc_p_w0, 50),
+
+    // @Param: ADRC_P_B1
+    // @DisplayName: ADRC PITCH beta1
+    // @Description: ADRC PITCH beta1
+    // @User: Standard
+    AP_GROUPINFO("ADRC_P_B1", 30, AC_AttitudeControl, _adrc_p_beta1, 0.3),
+
+    // @Param: ADRC_P_B2
+    // @DisplayName: ADRC PITCH beta2
+    // @Description: ADRC PITCH beta2
+    // @User: Standard
+    AP_GROUPINFO("ADRC_P_B2", 31, AC_AttitudeControl, _adrc_p_beta2, 0.0006),
+
+    // @Param: ADRC_Y_B0
+    // @DisplayName: ADRC YAW b0
+    // @Description: ADRC YAW b0
+    // @User: Standard
+    AP_GROUPINFO("ADRC_Y_B0", 32, AC_AttitudeControl, _adrc_y_b0, 0.5),
+
+    // @Param: ADRC_Y_W0
+    // @DisplayName: ADRC YAW w0
+    // @Description: ADRC YAW w0
+    // @User: Standard
+    AP_GROUPINFO("ADRC_Y_W0", 33, AC_AttitudeControl, _adrc_y_w0, 1),
+
     AP_GROUPEND
 };
 
@@ -880,13 +942,13 @@ float AC_AttitudeControl::rate_target_to_motor_roll(float rate_actual_rads, floa
     //ADRCROLL.h = 0.0005;
 
     /*---ESO parameter b0 w0---*/
-    ADRCROLL.b0 = 300;
-    ADRCROLL.w0 = 50;
+    ADRCROLL.b0 = _adrc_r_b0;
+    ADRCROLL.w0 = _adrc_r_w0;
 
     /*---NLSEF parameter---*/ 
-    //just like PD control 
-    ADRCROLL.beta_1 = 0.3; //0.8 0.2 is the best
-    ADRCROLL.beta_2 = 0.0006; //0.0005 is the best
+    //just like PD control
+    ADRCROLL.beta_1 = _adrc_r_beta1; //0.8 0.2 is the best
+    ADRCROLL.beta_2 = _adrc_r_beta2; //0.0005 is the best
 
     ADRC_Control(&ADRCROLL, rate_target_rads ,rate_actual_rads);
 
@@ -942,13 +1004,13 @@ float AC_AttitudeControl::rate_target_to_motor_pitch(float rate_actual_rads, flo
     //ADRCPITCH.h = 0.0005; 
 
     /*---ESO parameter b0 w0---*/
-    ADRCPITCH.b0 = 300;
-    ADRCPITCH.w0 = 50;
+    ADRCPITCH.b0 = _adrc_p_b0;
+    ADRCPITCH.w0 = _adrc_p_w0;
 
     /*---NLSEF parameter---*/ 
-    //just like PD control 
-    ADRCPITCH.beta_1 = 0.3; //0.8 0.2 is the best
-    ADRCPITCH.beta_2 = 0.0006; //0.0005 is the best
+    //just like PD control
+    ADRCPITCH.beta_1 = _adrc_p_beta1; //0.8 0.2 is the best
+    ADRCPITCH.beta_2 = _adrc_p_beta2;    //0.0005 is the best
 
     ADRC_Control(&ADRCPITCH, rate_target_rads ,rate_actual_rads);
     uint16_t radio_in = (_adrc_pid_p_ch >= 7) ? RC_Channels::rc_channel(_adrc_pid_p_ch - 1)->get_radio_in() : 0;

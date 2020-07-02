@@ -412,6 +412,16 @@ protected:
     AP_Int8 _adrc_pid_r_ch;
     AP_Int8 _adrc_pid_p_ch;
     AP_Int8 _adrc_pid_y_ch;
+    AP_Float _adrc_r_b0;
+    AP_Float _adrc_r_w0;
+    AP_Float _adrc_r_beta1;
+    AP_Float _adrc_r_beta2;
+    AP_Float _adrc_p_b0;
+    AP_Float _adrc_p_w0;
+    AP_Float _adrc_p_beta1;
+    AP_Float _adrc_p_beta2;
+    AP_Float _adrc_y_b0;
+    AP_Float _adrc_y_w0;
 
 protected:
     /*
