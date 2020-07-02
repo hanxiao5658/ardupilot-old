@@ -409,6 +409,10 @@ protected:
     const AP_Vehicle::MultiCopter &_aparm;
     AP_Motors&          _motors;
 
+    AP_Int8 _adrc_pid_r_ch;
+    AP_Int8 _adrc_pid_p_ch;
+    AP_Int8 _adrc_pid_y_ch;
+
 protected:
     /*
       state of control monitoring

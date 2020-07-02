@@ -155,6 +155,27 @@ const AP_Param::GroupInfo AC_AttitudeControl::var_info[] = {
     // @User: Standard
     AP_GROUPINFO("INPUT_TC", 20, AC_AttitudeControl, _input_tc, AC_ATTITUDE_CONTROL_INPUT_TC_DEFAULT),
 
+    // @Param: ADRC_R_CH
+    // @DisplayName: ADRC PID ROLL Switch channel
+    // @Description: ADRC PID ROLL Switch channel
+    // @Range: 7 14
+    // @User: Standard
+    AP_GROUPINFO("ADRC_R_CH", 21, AC_AttitudeControl, _adrc_pid_r_ch, 9),
+
+    // @Param: ADRC_P_CH
+    // @DisplayName: ADRC PID PITCH Switch channel
+    // @Description: ADRC PID PITCH Switch channel
+    // @Range: 7 14
+    // @User: Standard
+    AP_GROUPINFO("ADRC_P_CH", 22, AC_AttitudeControl, _adrc_pid_p_ch, 9),
+
+    // @Param: ADRC_Y_CH
+    // @DisplayName: ADRC PID YAW Switch channel
+    // @Description: ADRC PID YAW Switch channel
+    // @Range: 7 14
+    // @User: Standard
+    AP_GROUPINFO("ADRC_Y_CH", 23, AC_AttitudeControl, _adrc_pid_y_ch, 0),
+
     AP_GROUPEND
 };
 
@@ -869,10 +890,10 @@ float AC_AttitudeControl::rate_target_to_motor_roll(float rate_actual_rads, floa
 
     ADRC_Control(&ADRCROLL, rate_target_rads ,rate_actual_rads);
 
-    uint16_t radio_in = RC_Channels::rc_channel(8)->get_radio_in();
+    uint16_t radio_in = (_adrc_pid_r_ch >= 7) ? RC_Channels::rc_channel(_adrc_pid_r_ch - 1)->get_radio_in() : 0;
     if (radio_in > 1700)
     {
-        output = ADRCROLL.u ;
+        output = ADRCROLL.u;
     }
 ////////////////////////////////////////////////////////////////////////////////////////////////
 //*******  LADRC  **************************************************************
@@ -929,11 +950,11 @@ float AC_AttitudeControl::rate_target_to_motor_pitch(float rate_actual_rads, flo
     ADRCPITCH.beta_1 = 0.3; //0.8 0.2 is the best
     ADRCPITCH.beta_2 = 0.0006; //0.0005 is the best
 
-    ADRC_Control(&ADRCPITCH, rate_target_rads ,rate_actual_rads);   
-    uint16_t radio_in = RC_Channels::rc_channel(8)->get_radio_in();
+    ADRC_Control(&ADRCPITCH, rate_target_rads ,rate_actual_rads);
+    uint16_t radio_in = (_adrc_pid_p_ch >= 7) ? RC_Channels::rc_channel(_adrc_pid_p_ch - 1)->get_radio_in() : 0;
     if (radio_in > 1700)
     {
-        output = ADRCPITCH.u ;    
+        output = ADRCPITCH.u;
     }
 ////////////////////////////////////////////////////////////////////////////////////////////////
 //*******  LADRC  **************************************************************
@@ -988,7 +1009,11 @@ float AC_AttitudeControl::rate_target_to_motor_yaw(float rate_actual_rads, float
    
    ESO(&ADRCYAW , ADRCYAW.ADRC_final_signal ,rate_actual_rads, ADRCYAW.w0 );
    ADRCYAW.ADRC_final_signal = raw_yaw_PD_control_signal - ( ADRCYAW.z2 /ADRCYAW.b0 ) ;
-   //output = ADRCYAW.ADRC_final_signal ;
+
+    uint16_t radio_in = (_adrc_pid_y_ch >= 7) ? RC_Channels::rc_channel(_adrc_pid_y_ch - 1)->get_radio_in() : 0;
+    if (radio_in > 1700) {
+        output = ADRCYAW.ADRC_final_signal;
+    }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////
 
