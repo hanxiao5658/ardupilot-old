@@ -320,6 +320,7 @@ void Copter::fourhundred_hz_logging()
     //if (should_log(MASK_LOG_ATTITUDE_FAST)) {}
         Log_Write_Attitude();
         Log_Write_ADRCattitude();
+        Log_Write_ADRCattitudey();
         Log_Write_ADRCposition();
         Log_Write_ADRCTD();
     

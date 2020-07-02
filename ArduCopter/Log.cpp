@@ -394,10 +394,6 @@ struct PACKED log_ADRCattitude {
     float pitch_z1;
     float pitch_z2;
     float pitch_final_signal;
-    float yaw_p;
-    float yaw_d;
-    float yaw_z2;
-    float yaw_final_signal;
 };
 
 
@@ -417,6 +413,26 @@ void Copter::Log_Write_ADRCattitude()
         pitch_z1             : ADRCPITCH.z1,
         pitch_z2             : ADRCPITCH.z2/ADRCPITCH.b0,
         pitch_final_signal   : ADRCPITCH.ADRC_final_signal,
+    };
+    DataFlash.WriteBlock(&pkt, sizeof(pkt));
+}
+
+//log ADRC_attitude yaw
+struct PACKED log_ADRCattitudey {
+    LOG_PACKET_HEADER;
+    uint64_t time_us;
+    float yaw_p;
+    float yaw_d;
+    float yaw_z2;
+    float yaw_final_signal;
+};
+
+// Write an ADRC yaw Z packet
+void Copter::Log_Write_ADRCattitudey()
+{
+ struct log_ADRCattitudey pkt = {
+        LOG_PACKET_HEADER_INIT(LOG_ADRC_atty_MSG),
+        time_us         : AP_HAL::micros64(),
         yaw_p              : ADRCYAW.ADRC_P_signal,
         yaw_d              : ADRCYAW.ADRC_D_signal,
         yaw_z2             : ADRCYAW.z2/ADRCYAW.b0,
@@ -656,7 +672,10 @@ const struct LogStructure Copter::log_structure[] = {
 
 /**/
     { LOG_ADRC_att_MSG, sizeof(log_ADRCattitude),
-      "ADRC",   "Qffffffffffffff",   "TimeUS,r_P,r_D,r_z1,r_z2,r_fs,p_P,p_D,p_z1,p_z2,p_fs,y_P,y_D,y_z2,y_fs", "s------------", "F------------" },
+      "ADRC",   "Qffffffffff",   "TimeUS,r_P,r_D,r_z1,r_z2,r_fs,p_P,p_D,p_z1,p_z2,p_fs", "s----------", "F----------" },
+
+    { LOG_ADRC_atty_MSG, sizeof(log_ADRCattitudey),
+      "ADRY",   "Qffff",   "TimeUS,y_P,y_D,y_z2,y_fs", "s----", "F----" },
 
     { LOG_ADRC_pos_MSG, sizeof(log_ADRCposition),
       "APOS",   "Qffffffffffff",   "TimeUS,x_P,x_D,x_z2,x_fs,y_P,y_D,y_z2,y_fs,z_P,z_D,z_z2,z_fs", "s------------", "F------------" },

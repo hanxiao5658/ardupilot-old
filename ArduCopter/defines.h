@@ -316,6 +316,7 @@ enum LoggingParameters {
      LOG_PRECLAND_MSG,
      LOG_GUIDEDTARGET_MSG,
      LOG_ADRC_att_MSG,
+     LOG_ADRC_atty_MSG,
      LOG_ADRC_pos_MSG,
      LOG_ADRC_TD_MSG,
 

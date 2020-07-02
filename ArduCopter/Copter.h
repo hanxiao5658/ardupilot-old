@@ -796,6 +796,7 @@ private:
     void Log_Write_Performance();
     void Log_Write_Attitude();
     void Log_Write_ADRCattitude();
+    void Log_Write_ADRCattitudey();
     void Log_Write_ADRCposition();
     void Log_Write_ADRCTD();
     void Log_Write_EKF_POS();
