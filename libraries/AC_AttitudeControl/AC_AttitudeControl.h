@@ -298,6 +298,29 @@ public:
     // User settable parameters
     static const struct AP_Param::GroupInfo var_info[];
 
+    void set_adrc_b0(float b0) {
+        _adrc_r_b0 = b0;
+        _adrc_p_b0 = b0;
+    }
+
+    void set_adrc_w0(float w0)
+    {
+        _adrc_r_w0 = w0;
+        _adrc_p_w0 = w0;
+    }
+
+    void set_adrc_beta1(float beta1)
+    {
+        _adrc_r_beta1 = beta1;
+        _adrc_p_beta1 = beta1;
+    }
+
+    void set_adrc_beta2(float beta2)
+    {
+        _adrc_r_beta2 = beta2;
+        _adrc_p_beta2 = beta2;
+    }
+
 protected:
 
     // Update rate_target_ang_vel using attitude_error_rot_vec_rad
