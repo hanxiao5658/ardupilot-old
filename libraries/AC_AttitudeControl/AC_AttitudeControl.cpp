@@ -238,6 +238,13 @@ const AP_Param::GroupInfo AC_AttitudeControl::var_info[] = {
     // @User: Standard
     AP_GROUPINFO("ADRC_Y_W0", 33, AC_AttitudeControl, _adrc_y_w0, 1),
 
+    // @Param: DIS_ch
+    // @DisplayName: Disturbance on/off Switch channel
+    // @Description: Disturbance on/off Switch channel
+    // @Range: 7 14
+    // @User: Standard
+    AP_GROUPINFO("dis_ch", 34, AC_AttitudeControl, disturbance_ch, 14),
+
     AP_GROUPEND
 };
 
@@ -938,6 +945,7 @@ float AC_AttitudeControl::rate_target_to_motor_roll(float rate_actual_rads, floa
     _roll_rate_D = get_rate_roll_pid().get_d();
     float output = _roll_rate_P + _roll_rate_I + _roll_rate_D + get_rate_roll_pid().get_ff(rate_target_rads);
     _roll_rate_PID = _roll_rate_P + _roll_rate_I + _roll_rate_D;
+
 /////////////////////////////////////////////////////////////////////////////////////////////////// 
     // initial parameter is defined in ADRC.h 
     // change following parameters to tune
@@ -955,9 +963,8 @@ float AC_AttitudeControl::rate_target_to_motor_roll(float rate_actual_rads, floa
     //just like PD control
     ADRCROLL.beta_1 = _adrc_r_beta1; //0.8 0.2 is the best
     ADRCROLL.beta_2 = _adrc_r_beta2; //0.0005 is the best
-
-    ADRC_Control(&ADRCROLL, rate_target_rads ,rate_actual_rads);
-
+    
+    //ADRC_Control(&ADRCROLL, rate_target_rads ,rate_actual_rads);
     uint16_t radio_in = (_adrc_pid_r_ch >= 7) ? RC_Channels::rc_channel(_adrc_pid_r_ch - 1)->get_radio_in() : 0;
     if (radio_in > 1700)
     {
@@ -975,7 +982,11 @@ float AC_AttitudeControl::rate_target_to_motor_roll(float rate_actual_rads, floa
     output = ADRCROLL.ADRC_final_signal ;
 */
 ////////////////////////////////////////////////////////////////////////////////////////////////  
-    
+    uint16_t roll_dis_radio_in = (disturbance_ch >= 7) ? RC_Channels::rc_channel(disturbance_ch - 1)->get_radio_in() : 0;
+    if (roll_dis_radio_in > 1700)
+    {
+        output = output - 0.3 ;
+    }
 
     // Constrain output
     return constrain_float(output, -1.0f, 1.0f);

@@ -459,7 +459,7 @@ protected:
     AP_Float _adrc_p_beta2;
     AP_Float _adrc_y_b0;
     AP_Float _adrc_y_w0;
-
+    AP_Float disturbance_ch;
     
 
 protected:
