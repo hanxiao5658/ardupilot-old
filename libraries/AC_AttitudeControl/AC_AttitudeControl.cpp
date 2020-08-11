@@ -930,8 +930,14 @@ float AC_AttitudeControl::rate_target_to_motor_roll(float rate_actual_rads, floa
     }
 
     // Compute output in range -1 ~ +1
-    float output = get_rate_roll_pid().get_p() + integrator + get_rate_roll_pid().get_d() + get_rate_roll_pid().get_ff(rate_target_rads);
+    //float output = get_rate_roll_pid().get_p() + integrator + get_rate_roll_pid().get_d() + get_rate_roll_pid().get_ff(rate_target_rads);
     
+    //log PID results
+    _roll_rate_P = get_rate_roll_pid().get_p();
+    _roll_rate_I = integrator;
+    _roll_rate_D = get_rate_roll_pid().get_d();
+    float output = _roll_rate_P + _roll_rate_I + _roll_rate_D + get_rate_roll_pid().get_ff(rate_target_rads);
+    _roll_rate_PID = _roll_rate_P + _roll_rate_I + _roll_rate_D;
 /////////////////////////////////////////////////////////////////////////////////////////////////// 
     // initial parameter is defined in ADRC.h 
     // change following parameters to tune
@@ -992,8 +998,15 @@ float AC_AttitudeControl::rate_target_to_motor_pitch(float rate_actual_rads, flo
     }
 
     // Compute output in range -1 ~ +1
-    float output = get_rate_pitch_pid().get_p() + integrator + get_rate_pitch_pid().get_d() + get_rate_pitch_pid().get_ff(rate_target_rads);
+    //float output = get_rate_pitch_pid().get_p() + integrator + get_rate_pitch_pid().get_d() + get_rate_pitch_pid().get_ff(rate_target_rads);
     
+    //log PID results
+    _pitch_rate_P = get_rate_pitch_pid().get_p();
+    _pitch_rate_I = integrator;
+    _pitch_rate_D = get_rate_pitch_pid().get_d();
+    float output = _pitch_rate_P + _pitch_rate_I + _pitch_rate_D + get_rate_pitch_pid().get_ff(rate_target_rads);
+    _pitch_rate_PID = _pitch_rate_P + _pitch_rate_I + _pitch_rate_D;
+
 /////////////////////////////////////////////////////////////////////////////////////////////////// 
     // initial parameter is defined in ADRC.h 
     // change following parameters to tune

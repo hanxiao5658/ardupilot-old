@@ -68,6 +68,20 @@ public:
     // Empty destructor to suppress compiler warning
     virtual ~AC_AttitudeControl() {}
 
+//////////////////////////////////////////////
+    
+    AP_Float _roll_rate_P;
+    AP_Float _roll_rate_I;
+    AP_Float _roll_rate_D;
+    AP_Float _roll_rate_PID;
+
+    AP_Float _pitch_rate_P;
+    AP_Float _pitch_rate_I;
+    AP_Float _pitch_rate_D;
+    AP_Float _pitch_rate_PID;
+
+//////////////////////////////////////////////
+
     // pid accessors
     AC_P& get_angle_roll_p() { return _p_angle_roll; }
     AC_P& get_angle_pitch_p() { return _p_angle_pitch; }
@@ -445,6 +459,8 @@ protected:
     AP_Float _adrc_p_beta2;
     AP_Float _adrc_y_b0;
     AP_Float _adrc_y_w0;
+
+    
 
 protected:
     /*

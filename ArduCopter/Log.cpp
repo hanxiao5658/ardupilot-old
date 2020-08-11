@@ -521,6 +521,76 @@ void Copter::Log_Write_ADRCTD()
     DataFlash.WriteBlock(&pkt, sizeof(pkt));
 }
 
+
+/**/
+// Write an ADRC parameter packet
+struct PACKED log_ADRCpara {
+    LOG_PACKET_HEADER;
+    uint64_t time_us;
+    float roll_rate_b1;
+    float roll_rate_b2;
+    float roll_rate_b0;
+
+    float pitch_rate_b1;
+    float pitch_rate_b2;
+    float pitch_rate_b0;
+
+};
+
+void Copter::Log_Write_ADRCpara()
+{
+ struct log_ADRCpara pkt = {
+        LOG_PACKET_HEADER_INIT(LOG_ADRC_para_MSG),
+        time_us         : AP_HAL::micros64(),
+        roll_rate_b1             : ADRCROLL.beta_1,
+        roll_rate_b2             : ADRCROLL.beta_2,
+        roll_rate_b0             : ADRCROLL.b0,
+
+        pitch_rate_b1             : ADRCPITCH.beta_1,
+        pitch_rate_b2             : ADRCPITCH.beta_2,
+        pitch_rate_b0            : ADRCPITCH.b0,
+ 
+        
+    };
+    DataFlash.WriteBlock(&pkt, sizeof(pkt));
+}
+
+/**/
+// Write an attitude PID result packet
+struct PACKED log_PIDresult {
+    LOG_PACKET_HEADER;
+    uint64_t time_us;
+    float roll_rate_P_result;
+    float roll_rate_I_result;
+    float roll_rate_D_result;
+    float roll_rate_PID_result;
+
+    float pitch_rate_P_result;
+    float pitch_rate_I_result;
+    float pitch_rate_D_result;
+    float pitch_rate_PID_result;
+};
+
+void Copter::Log_Write_PIDresult()
+{
+ struct log_PIDresult pkt = {
+        LOG_PACKET_HEADER_INIT(LOG_PID_result_MSG),
+        time_us         : AP_HAL::micros64(),
+        roll_rate_P_result             : attitude_control->_roll_rate_P,
+        roll_rate_I_result             : attitude_control->_roll_rate_I,
+        roll_rate_D_result             : attitude_control->_roll_rate_D,
+        roll_rate_PID_result           : attitude_control->_roll_rate_PID,
+
+        pitch_rate_P_result             : attitude_control->_pitch_rate_P,
+        pitch_rate_I_result             : attitude_control->_pitch_rate_I,
+        pitch_rate_D_result             : attitude_control->_pitch_rate_D,
+        pitch_rate_PID_result           : attitude_control->_pitch_rate_PID,
+ 
+        
+    };
+    DataFlash.WriteBlock(&pkt, sizeof(pkt));
+}
+
 // logs when baro or compass becomes unhealthy
 void Copter::Log_Sensor_Health()
 {
@@ -670,7 +740,8 @@ const struct LogStructure Copter::log_structure[] = {
     { LOG_ERROR_MSG, sizeof(log_Error),         
       "ERR",   "QBB",         "TimeUS,Subsys,ECode", "s--", "F--" },
 
-/**/
+////////////////////////////////////////////////////////////////////////////////////
+
     { LOG_ADRC_att_MSG, sizeof(log_ADRCattitude),
       "ADRC",   "Qffffffffff",   "TimeUS,r_P,r_D,r_z1,r_z2,r_fs,p_P,p_D,p_z1,p_z2,p_fs", "s----------", "F----------" },
 
@@ -682,6 +753,16 @@ const struct LogStructure Copter::log_structure[] = {
 
     { LOG_ADRC_TD_MSG, sizeof(log_ADRCTD),
       "ATD",   "Qffffffffff",   "TimeUS,r_tr,r_ar,r_t,r_v1,r_v2,p_tr,p_ar,p_t,p_v1,p_v2", "s----------", "F----------" },
+
+    { LOG_ADRC_para_MSG, sizeof(log_ADRCpara),
+      "APAR",   "Qffffff",   "TimeUS,r_b1,r_b2,r_b0,p_b1,p_b2,p_b0", "s------", "F------" },
+
+    { LOG_PID_result_MSG, sizeof(log_PIDresult),
+      "PID2",   "Qffffffff",   "TimeUS,r_P,r_I,r_D,r_PID,p_P,p_I,p_D,p_PID", "s--------", "F--------", },
+
+
+
+////////////////////////////////////////////////////////////////////////////////////
 
 #if FRAME_CONFIG == HELI_FRAME
     { LOG_HELI_MSG, sizeof(log_Heli),

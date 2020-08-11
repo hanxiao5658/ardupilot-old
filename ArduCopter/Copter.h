@@ -801,6 +801,8 @@ private:
     void Log_Write_ADRCTD();
     void Log_Write_EKF_POS();
     void Log_Write_MotBatt();
+    void Log_Write_ADRCpara();
+    void Log_Write_PIDresult();
     void Log_Write_Event(uint8_t id);
     void Log_Write_Data(uint8_t id, int32_t value);
     void Log_Write_Data(uint8_t id, uint32_t value);
