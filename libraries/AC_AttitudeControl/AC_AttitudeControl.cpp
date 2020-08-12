@@ -964,7 +964,7 @@ float AC_AttitudeControl::rate_target_to_motor_roll(float rate_actual_rads, floa
     ADRCROLL.beta_1 = _adrc_r_beta1; //0.8 0.2 is the best
     ADRCROLL.beta_2 = _adrc_r_beta2; //0.0005 is the best
     
-    //ADRC_Control(&ADRCROLL, rate_target_rads ,rate_actual_rads);
+    ADRC_Control(&ADRCROLL, rate_target_rads ,rate_actual_rads);
     uint16_t radio_in = (_adrc_pid_r_ch >= 7) ? RC_Channels::rc_channel(_adrc_pid_r_ch - 1)->get_radio_in() : 0;
     if (radio_in > 1700)
     {
