@@ -546,9 +546,12 @@ void Copter::ModeAutoTune::autotune_attitude_control()
             }
             break;
         }
-        break;
+        break; // end switch wtep
 
-    case TWITCHING:
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////// 
+
+    // big switch step
+    case TWITCHING:{
         // Run the twitching step
         // Note: we should be using intra-test gains (which are very close to the original gains but have lower I)
 
@@ -654,9 +657,12 @@ void Copter::ModeAutoTune::autotune_attitude_control()
         Log_Write_AutoTuneDetails(lean_angle, rotation_rate);
         copter.DataFlash.Log_Write_Rate(ahrs, *motors, *attitude_control, *pos_control);
 #endif
-        break;
+        break; }//end switch step
 
-    case UPDATE_GAINS:
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+    // big switch step
+    case UPDATE_GAINS:{
 
         // re-enable rate limits
         attitude_control->use_sqrt_controller(true);
@@ -869,7 +875,7 @@ void Copter::ModeAutoTune::autotune_attitude_control()
         // reset testing step
         step = WAITING_FOR_LEVEL;
         step_start_time = millis();
-        break;
+        break;}
     }
 }
 

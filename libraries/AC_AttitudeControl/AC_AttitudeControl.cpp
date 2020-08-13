@@ -982,12 +982,14 @@ float AC_AttitudeControl::rate_target_to_motor_roll(float rate_actual_rads, floa
     output = ADRCROLL.ADRC_final_signal ;
 */
 ////////////////////////////////////////////////////////////////////////////////////////////////  
+//use ch14 to simulate disturbance by reduce 0.3 of output
     uint16_t roll_dis_radio_in = (disturbance_ch >= 7) ? RC_Channels::rc_channel(disturbance_ch - 1)->get_radio_in() : 0;
     if (roll_dis_radio_in > 1700)
     {
         output = output - 0.3 ;
     }
 
+////////////////////////////////////////////////////////////////////////////////////////////////
     // Constrain output
     return constrain_float(output, -1.0f, 1.0f);
    
