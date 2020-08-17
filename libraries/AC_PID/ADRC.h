@@ -14,15 +14,6 @@ float N0=15;
 float h0;
 float fh;//
 
-/*--- TD filter ---*/
-float x11=0.0f;//transcient signal x1 used to track input signal
-float x22=0.0f;//dx1/dt 
-float r1=1e9;  //tunning parameter 
-float h1=0.0005;//h is integral step, must smaller than 0.0025 (because main loop run this program in 400hz)
-float N01=15;
-float h01;
-float fh1;//
-
 /*---ESO---*/
 float z1;
 float z2; // disturbance result
@@ -76,6 +67,6 @@ float Fhan_ADRC(float x1_delta , float x2 ,float r , float h);
 //extern Fhan_Data ADRC_Pitch_Controller,ADRC_Roll_Controller;
 void ESO(Fhan_Data *fhan_Input, float PD_signal, float feedback_signal, float w0);
 void linear_Conbination_ADRC(Fhan_Data *fhan_Input);
-void TD_filter(Fhan_Data *fhan_Input,float target_signal);
+
 
 

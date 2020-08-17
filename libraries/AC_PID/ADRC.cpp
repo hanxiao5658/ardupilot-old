@@ -73,23 +73,12 @@ void TD_ADRC(Fhan_Data *fhan_Input,float expect_ADRC)//安排ADRC过度过程
   
 }
 
-/*------transcient profile generator, tunning parameters are h, r---------------*/
-void TD_filter(Fhan_Data *fhan_Input,float target_signal)// this is useless
-{
-  
-  fhan_Input->fh1 = Fhan_ADRC( fhan_Input->x11 - target_signal , fhan_Input->x22, fhan_Input->r1, fhan_Input->h1);
-  fhan_Input->x11 += fhan_Input->h1*fhan_Input->x22;//跟新最速跟踪状态量x1
-  fhan_Input->x22 += fhan_Input->h1*fhan_Input->fh1;//跟新最速跟踪状态量微分x2
-  
-}
+
 
 
 /*--------------ESO,tunning parameters are w0 and b0 -------------*/
 void ESO(Fhan_Data *fhan_Input, float final_signal, float feedback_signal, float w0)
 {
-  //TD_filter(fhan_Input , feedback_signal );
- 
- //fhan_Input->e = fhan_Input->z1 - fhan_Input->x11 ;//TD filter
 
  fhan_Input->e = fhan_Input->z1 - feedback_signal ;
 
