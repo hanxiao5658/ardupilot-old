@@ -232,19 +232,23 @@ void Copter::tuning() {
 #endif
 
     case TUNING_ADRC_B0:
-        attitude_control->set_adrc_b0(tuning_value * 1000.0f);
+        attitude_control->set_adrc_roll_b0(tuning_value * 1000.0f);
+        attitude_control->set_adrc_pitch_b0(tuning_value * 1000.0f);
         break;
 
     case TUNING_ADRC_W0:
-        attitude_control->set_adrc_w0(tuning_value * 1000.0f);
+        attitude_control->set_adrc_roll_w0(tuning_value * 1000.0f);
+        attitude_control->set_adrc_pitch_w0(tuning_value * 1000.0f);
         break;
 
     case TUNING_ADRC_B1:
-        attitude_control->set_adrc_beta1(tuning_value);
+        attitude_control->set_adrc_roll_beta1(tuning_value);
+        attitude_control->set_adrc_pitch_beta1(tuning_value);
         break;
 
     case TUNING_ADRC_B2:
-        attitude_control->set_adrc_beta2(tuning_value / 100.0f);
+        attitude_control->set_adrc_roll_beta2(tuning_value / 100.0f);
+        attitude_control->set_adrc_pitch_beta2(tuning_value / 100.0f);
         break;
     }
 }

@@ -92,6 +92,18 @@
 
 #define AUTOTUNE_ANNOUNCE_INTERVAL_MS 2000
 
+//////////////////////////////////////////////////////////////////////////////////////
+// define ADRC parameters 
+#define AUTOTUNE_ADRC_beta1_MAX                  1.0f       // maximum ADRC beta1 value
+#define AUTOTUNE_ADRC_beta1_MIN                  0.01f      // minmum ADRC beta1 value
+#define AUTOTUNE_ADRC_beta1_STEP                  0.05f     // minimum increment when increasing/decreasing ADRC beta1 term
+#define AUTOTUNE_ADRC_beta2_MAX                  0.200f     // maximum ADRC beta2 value
+#define AUTOTUNE_ADRC_beta2_MIN                  0.0001f     // minimum ADRC beta2 value
+#define AUTOTUNE_ADRC_beta2_STEP                  0.05f     // minimum increment when increasing/decreasing ADRC beta2 term
+
+
+//////////////////////////////////////////////////////////////////////////////////////
+
 // autotune_init - should be called when autotune mode is selected
 bool Copter::ModeAutoTune::init(bool ignore_checks)
 {
@@ -251,6 +263,7 @@ const char *Copter::ModeAutoTune::type_string() const
     return "Bug";
 }
 
+// send tunning message to gcs
 void Copter::ModeAutoTune::do_gcs_announcements()
 {
     const uint32_t now = millis();
@@ -261,6 +274,11 @@ void Copter::ModeAutoTune::do_gcs_announcements()
     float tune_rd = 0.0f;
     float tune_sp = 0.0f;
     float tune_accel = 0.0f;
+
+    // ADRC value 
+    float tune_b1 = 0.0f;
+    float tune_b2 = 0.0f;
+
     char axis_char = '?';
     switch (axis) {
     case ROLL:
@@ -268,6 +286,11 @@ void Copter::ModeAutoTune::do_gcs_announcements()
         tune_rd = tune_roll_rd;
         tune_sp = tune_roll_sp;
         tune_accel = tune_roll_accel;
+
+        // ADRC value 
+        tune_b1 = ADRC_tune_roll_beta1;
+        tune_b2 = ADRC_tune_roll_beta2;
+
         axis_char = 'R';
         break;
     case PITCH:
@@ -275,6 +298,11 @@ void Copter::ModeAutoTune::do_gcs_announcements()
         tune_rd = tune_pitch_rd;
         tune_sp = tune_pitch_sp;
         tune_accel = tune_pitch_accel;
+
+        // ADRC value 
+        tune_b1 = ADRC_tune_pitch_beta1;
+        tune_b2 = ADRC_tune_pitch_beta2;
+
         axis_char = 'P';
         break;
     case YAW:
@@ -296,9 +324,13 @@ void Copter::ModeAutoTune::do_gcs_announcements()
     }
     switch (tune_type) {
     case RD_UP:
+        gcs().send_text(MAV_SEVERITY_INFO, "AutoTune: b1=%f b2=%f", (double)tune_b1, (double)tune_b2);
+        break;
     case RD_DOWN:
+        gcs().send_text(MAV_SEVERITY_INFO, "AutoTune: b1=%f b2=%f", (double)tune_b1, (double)tune_b2);
+        break;
     case RP_UP:
-        gcs().send_text(MAV_SEVERITY_INFO, "AutoTune: p=%f d=%f", (double)tune_rp, (double)tune_rd);
+        gcs().send_text(MAV_SEVERITY_INFO, "AutoTune: p=%f d=%f b1=%f b2=%f", (double)tune_rp, (double)tune_rd, (double)tune_b1, (double)tune_b2);
         break;
     case SP_DOWN:
     case SP_UP:
@@ -660,7 +692,7 @@ void Copter::ModeAutoTune::autotune_attitude_control()
         break; }//end switch step
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
+    //update ADRC/PID value up or down 
     // big switch step
     case UPDATE_GAINS:{
 
@@ -702,9 +734,17 @@ void Copter::ModeAutoTune::autotune_attitude_control()
             switch (axis) {
             case ROLL:
                 updating_rate_d_up(tune_roll_rd, g.autotune_min_d, AUTOTUNE_RD_MAX, AUTOTUNE_RD_STEP, tune_roll_rp, AUTOTUNE_RP_MIN, AUTOTUNE_RP_MAX, AUTOTUNE_RP_STEP, target_rate, test_rate_min, test_rate_max);
+                
+                //update ADRC parameter , maybe need to switch between PID and ADRC tune    
+                updating_rate_d_up(ADRC_tune_roll_beta2, AUTOTUNE_ADRC_beta2_MIN, AUTOTUNE_ADRC_beta2_MAX, AUTOTUNE_ADRC_beta2_STEP, ADRC_tune_roll_beta1, AUTOTUNE_ADRC_beta1_MIN, AUTOTUNE_ADRC_beta1_MAX, AUTOTUNE_ADRC_beta1_STEP, target_rate, test_rate_min, test_rate_max);
+                
                 break;
             case PITCH:
                 updating_rate_d_up(tune_pitch_rd, g.autotune_min_d, AUTOTUNE_RD_MAX, AUTOTUNE_RD_STEP, tune_pitch_rp, AUTOTUNE_RP_MIN, AUTOTUNE_RP_MAX, AUTOTUNE_RP_STEP, target_rate, test_rate_min, test_rate_max);
+                
+                //update ADRC parameter , maybe need to switch between PID and ADRC tune    
+                updating_rate_d_up(ADRC_tune_pitch_beta2, AUTOTUNE_ADRC_beta2_MIN, AUTOTUNE_ADRC_beta2_MAX, AUTOTUNE_ADRC_beta2_STEP, ADRC_tune_pitch_beta1, AUTOTUNE_ADRC_beta1_MIN, AUTOTUNE_ADRC_beta1_MAX, AUTOTUNE_ADRC_beta1_STEP, target_rate, test_rate_min, test_rate_max);
+                
                 break;
             case YAW:
                 updating_rate_d_up(tune_yaw_rLPF, AUTOTUNE_RLPF_MIN, AUTOTUNE_RLPF_MAX, AUTOTUNE_RD_STEP, tune_yaw_rp, AUTOTUNE_RP_MIN, AUTOTUNE_RP_MAX, AUTOTUNE_RP_STEP, target_rate, test_rate_min, test_rate_max);
@@ -716,9 +756,17 @@ void Copter::ModeAutoTune::autotune_attitude_control()
             switch (axis) {
             case ROLL:
                 updating_rate_d_down(tune_roll_rd, g.autotune_min_d, AUTOTUNE_RD_STEP, tune_roll_rp, AUTOTUNE_RP_MIN, AUTOTUNE_RP_MAX, AUTOTUNE_RP_STEP, target_rate, test_rate_min, test_rate_max);
+                
+                //update ADRC parameter , maybe need to switch between PID and ADRC tune    
+                updating_rate_d_down(ADRC_tune_roll_beta2, AUTOTUNE_ADRC_beta2_MIN, AUTOTUNE_ADRC_beta2_STEP, ADRC_tune_roll_beta1, AUTOTUNE_ADRC_beta1_MIN, AUTOTUNE_ADRC_beta1_MAX, AUTOTUNE_ADRC_beta1_STEP, target_rate, test_rate_min, test_rate_max);
+                
                 break;
             case PITCH:
                 updating_rate_d_down(tune_pitch_rd, g.autotune_min_d, AUTOTUNE_RD_STEP, tune_pitch_rp, AUTOTUNE_RP_MIN, AUTOTUNE_RP_MAX, AUTOTUNE_RP_STEP, target_rate, test_rate_min, test_rate_max);
+                
+                //update ADRC parameter , maybe need to switch between PID and ADRC tune    
+                updating_rate_d_down(ADRC_tune_pitch_beta2, AUTOTUNE_ADRC_beta2_MIN, AUTOTUNE_ADRC_beta2_STEP, ADRC_tune_pitch_beta1, AUTOTUNE_ADRC_beta1_MIN, AUTOTUNE_ADRC_beta1_MAX, AUTOTUNE_ADRC_beta1_STEP, target_rate, test_rate_min, test_rate_max);
+                
                 break;
             case YAW:
                 updating_rate_d_down(tune_yaw_rLPF, AUTOTUNE_RLPF_MIN, AUTOTUNE_RD_STEP, tune_yaw_rp, AUTOTUNE_RP_MIN, AUTOTUNE_RP_MAX, AUTOTUNE_RP_STEP, target_rate, test_rate_min, test_rate_max);
@@ -730,9 +778,17 @@ void Copter::ModeAutoTune::autotune_attitude_control()
             switch (axis) {
             case ROLL:
                 updating_rate_p_up_d_down(tune_roll_rd, g.autotune_min_d, AUTOTUNE_RD_STEP, tune_roll_rp, AUTOTUNE_RP_MIN, AUTOTUNE_RP_MAX, AUTOTUNE_RP_STEP, target_rate, test_rate_min, test_rate_max);
+                
+                //update ADRC parameter , maybe need to switch between PID and ADRC tune    
+                updating_rate_p_up_d_down(ADRC_tune_roll_beta2, AUTOTUNE_ADRC_beta2_MIN, AUTOTUNE_ADRC_beta2_STEP, ADRC_tune_roll_beta1, AUTOTUNE_ADRC_beta1_MIN, AUTOTUNE_ADRC_beta1_MAX, AUTOTUNE_ADRC_beta1_STEP, target_rate, test_rate_min, test_rate_max);
+                
                 break;
             case PITCH:
                 updating_rate_p_up_d_down(tune_pitch_rd, g.autotune_min_d, AUTOTUNE_RD_STEP, tune_pitch_rp, AUTOTUNE_RP_MIN, AUTOTUNE_RP_MAX, AUTOTUNE_RP_STEP, target_rate, test_rate_min, test_rate_max);
+                
+                //update ADRC parameter , maybe need to switch between PID and ADRC tune    
+                updating_rate_p_up_d_down(ADRC_tune_pitch_beta2, AUTOTUNE_ADRC_beta2_MIN, AUTOTUNE_ADRC_beta2_STEP, ADRC_tune_pitch_beta1, AUTOTUNE_ADRC_beta1_MIN, AUTOTUNE_ADRC_beta1_MAX, AUTOTUNE_ADRC_beta1_STEP, target_rate, test_rate_min, test_rate_max);
+                
                 break;
             case YAW:
                 updating_rate_p_up_d_down(tune_yaw_rLPF, AUTOTUNE_RLPF_MIN, AUTOTUNE_RD_STEP, tune_yaw_rp, AUTOTUNE_RP_MIN, AUTOTUNE_RP_MAX, AUTOTUNE_RP_STEP, target_rate, test_rate_min, test_rate_max);
@@ -933,7 +989,24 @@ void Copter::ModeAutoTune::backup_gains_and_initialise()
     tune_yaw_rLPF = attitude_control->get_rate_yaw_pid().filt_hz();
     tune_yaw_sp = attitude_control->get_angle_yaw_p().kP();
     tune_yaw_accel = attitude_control->get_accel_yaw_max();
+    
+    ///////////////////////////////////////////////////////////////
+    // backup original ADRC parameters beta1 beta2 b0 and initialise tuned ADRC values
+    ADRC_orig_roll_beta1 = attitude_control->get_adrc_roll_beta1();
+    ADRC_orig_roll_beta2 = attitude_control->get_adrc_roll_beta2();
+    ADRC_orig_roll_b0    = attitude_control->get_adrc_roll_b0();
+    ADRC_tune_roll_beta1 = attitude_control->get_adrc_roll_beta1();
+    ADRC_tune_roll_beta2 = attitude_control->get_adrc_roll_beta2();
+    ADRC_tune_roll_b0    = attitude_control->get_adrc_roll_b0();
 
+    ADRC_orig_pitch_beta1 = attitude_control->get_adrc_pitch_beta1();
+    ADRC_orig_pitch_beta2 = attitude_control->get_adrc_pitch_beta2();
+    ADRC_orig_pitch_b0    = attitude_control->get_adrc_pitch_b0();
+    ADRC_tune_pitch_beta1 = attitude_control->get_adrc_pitch_beta1();
+    ADRC_tune_pitch_beta2 = attitude_control->get_adrc_pitch_beta2();
+    ADRC_tune_pitch_b0    = attitude_control->get_adrc_pitch_b0();
+    ///////////////////////////////////////////////////////////////
+    
     Log_Write_Event(DATA_AUTOTUNE_INITIALISED);
 }
 
@@ -949,6 +1022,11 @@ void Copter::ModeAutoTune::load_orig_gains()
             attitude_control->get_rate_roll_pid().kD(orig_roll_rd);
             attitude_control->get_angle_roll_p().kP(orig_roll_sp);
             attitude_control->set_accel_roll_max(orig_roll_accel);
+
+            //load original ADRC roll parameters
+            attitude_control->set_adrc_roll_beta1(ADRC_orig_roll_beta1);
+            attitude_control->set_adrc_roll_beta2(ADRC_orig_roll_beta2);
+            attitude_control->set_adrc_roll_b0(ADRC_orig_roll_b0);
         }
     }
     if (pitch_enabled()) {
@@ -958,6 +1036,11 @@ void Copter::ModeAutoTune::load_orig_gains()
             attitude_control->get_rate_pitch_pid().kD(orig_pitch_rd);
             attitude_control->get_angle_pitch_p().kP(orig_pitch_sp);
             attitude_control->set_accel_pitch_max(orig_pitch_accel);
+
+            //load original ADRC pitch parameters
+            attitude_control->set_adrc_pitch_beta1(ADRC_orig_pitch_beta1);
+            attitude_control->set_adrc_pitch_beta2(ADRC_orig_pitch_beta2);
+            attitude_control->set_adrc_pitch_b0(ADRC_orig_pitch_b0);
         }
     }
     if (yaw_enabled()) {
@@ -987,6 +1070,11 @@ void Copter::ModeAutoTune::load_tuned_gains()
             attitude_control->get_rate_roll_pid().kD(tune_roll_rd);
             attitude_control->get_angle_roll_p().kP(tune_roll_sp);
             attitude_control->set_accel_roll_max(tune_roll_accel);
+
+            //load tuned ADRC roll value
+            attitude_control->set_adrc_roll_beta1(ADRC_tune_roll_beta1);
+            attitude_control->set_adrc_roll_beta2(ADRC_tune_roll_beta2);
+            attitude_control->set_adrc_roll_b0(ADRC_tune_roll_b0);
         }
     }
     if (pitch_enabled()) {
@@ -996,6 +1084,11 @@ void Copter::ModeAutoTune::load_tuned_gains()
             attitude_control->get_rate_pitch_pid().kD(tune_pitch_rd);
             attitude_control->get_angle_pitch_p().kP(tune_pitch_sp);
             attitude_control->set_accel_pitch_max(tune_pitch_accel);
+
+            //load tuned ADRC pitch value
+            attitude_control->set_adrc_pitch_beta1(ADRC_tune_pitch_beta1);
+            attitude_control->set_adrc_pitch_beta2(ADRC_tune_pitch_beta2);
+            attitude_control->set_adrc_pitch_b0(ADRC_tune_pitch_b0);
         }
     }
     if (yaw_enabled()) {
@@ -1022,12 +1115,22 @@ void Copter::ModeAutoTune::load_intra_test_gains()
         attitude_control->get_rate_roll_pid().kI(orig_roll_rp*AUTOTUNE_PI_RATIO_FOR_TESTING);
         attitude_control->get_rate_roll_pid().kD(orig_roll_rd);
         attitude_control->get_angle_roll_p().kP(orig_roll_sp);
+
+        // load origainal ADRC roll value
+        attitude_control->set_adrc_roll_beta1(ADRC_orig_roll_beta1);
+        attitude_control->set_adrc_roll_beta2(ADRC_orig_roll_beta2);
+        attitude_control->set_adrc_roll_b0(ADRC_orig_roll_b0);
     }
     if (pitch_enabled()) {
         attitude_control->get_rate_pitch_pid().kP(orig_pitch_rp);
         attitude_control->get_rate_pitch_pid().kI(orig_pitch_rp*AUTOTUNE_PI_RATIO_FOR_TESTING);
         attitude_control->get_rate_pitch_pid().kD(orig_pitch_rd);
         attitude_control->get_angle_pitch_p().kP(orig_pitch_sp);
+
+        //load original ADRC pitch parameters
+        attitude_control->set_adrc_pitch_beta1(ADRC_orig_pitch_beta1);
+        attitude_control->set_adrc_pitch_beta2(ADRC_orig_pitch_beta2);
+        attitude_control->set_adrc_pitch_b0(ADRC_orig_pitch_b0);
     }
     if (yaw_enabled()) {
         attitude_control->get_rate_yaw_pid().kP(orig_yaw_rp);
@@ -1048,13 +1151,25 @@ void Copter::ModeAutoTune::load_twitch_gains()
             attitude_control->get_rate_roll_pid().kI(tune_roll_rp*0.01f);
             attitude_control->get_rate_roll_pid().kD(tune_roll_rd);
             attitude_control->get_angle_roll_p().kP(tune_roll_sp);
+
+            //load tuned ADRC roll value
+            attitude_control->set_adrc_roll_beta1(ADRC_tune_roll_beta1);
+            attitude_control->set_adrc_roll_beta2(ADRC_tune_roll_beta2);
+            attitude_control->set_adrc_roll_b0(ADRC_tune_roll_b0);
             break;
+
         case PITCH:
             attitude_control->get_rate_pitch_pid().kP(tune_pitch_rp);
             attitude_control->get_rate_pitch_pid().kI(tune_pitch_rp*0.01f);
             attitude_control->get_rate_pitch_pid().kD(tune_pitch_rd);
             attitude_control->get_angle_pitch_p().kP(tune_pitch_sp);
+
+            //load tuned ADRC pitch value
+            attitude_control->set_adrc_pitch_beta1(ADRC_tune_pitch_beta1);
+            attitude_control->set_adrc_pitch_beta2(ADRC_tune_pitch_beta2);
+            attitude_control->set_adrc_pitch_b0(ADRC_tune_pitch_b0);
             break;
+
         case YAW:
             attitude_control->get_rate_yaw_pid().kP(tune_yaw_rp);
             attitude_control->get_rate_yaw_pid().kI(tune_yaw_rp*0.01f);

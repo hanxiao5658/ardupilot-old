@@ -550,14 +550,14 @@ private:
     LowPassFilterFloat  rotation_rate_filt;         // filtered rotation rate in radians/second
 
 // backup of currently being tuned parameter values
-    float    orig_roll_rp = 0, orig_roll_ri, orig_roll_rd, orig_roll_sp, orig_roll_accel;
-    float    orig_pitch_rp = 0, orig_pitch_ri, orig_pitch_rd, orig_pitch_sp, orig_pitch_accel;
+    float    orig_roll_rp = 0, orig_roll_ri, orig_roll_rd, orig_roll_sp, orig_roll_accel, ADRC_orig_roll_beta1, ADRC_orig_roll_beta2, ADRC_orig_roll_b0;
+    float    orig_pitch_rp = 0, orig_pitch_ri, orig_pitch_rd, orig_pitch_sp, orig_pitch_accel, ADRC_orig_pitch_beta1, ADRC_orig_pitch_beta2, ADRC_orig_pitch_b0;
     float    orig_yaw_rp = 0, orig_yaw_ri, orig_yaw_rd, orig_yaw_rLPF, orig_yaw_sp, orig_yaw_accel;
     bool     orig_bf_feedforward;
 
 // currently being tuned parameter values
-    float    tune_roll_rp, tune_roll_rd, tune_roll_sp, tune_roll_accel;
-    float    tune_pitch_rp, tune_pitch_rd, tune_pitch_sp, tune_pitch_accel;
+    float    tune_roll_rp, tune_roll_rd, tune_roll_sp, tune_roll_accel, ADRC_tune_roll_beta1, ADRC_tune_roll_beta2, ADRC_tune_roll_b0;
+    float    tune_pitch_rp, tune_pitch_rd, tune_pitch_sp, tune_pitch_accel, ADRC_tune_pitch_beta1, ADRC_tune_pitch_beta2, ADRC_tune_pitch_b0;
     float    tune_yaw_rp, tune_yaw_rLPF, tune_yaw_sp, tune_yaw_accel;
 
     uint32_t announce_time;

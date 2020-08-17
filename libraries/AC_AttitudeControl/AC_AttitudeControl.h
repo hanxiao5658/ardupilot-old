@@ -311,29 +311,29 @@ public:
     
     // User settable parameters
     static const struct AP_Param::GroupInfo var_info[];
+    
+    // set ADRC parameters
+    // called in tunning.cpp and autotune_mode
+    void set_adrc_roll_beta1(float beta1)   { _adrc_r_beta1 = beta1;    }
+    void set_adrc_roll_beta2(float beta2)   { _adrc_r_beta2 = beta2;    }
+    void set_adrc_roll_w0(float w0)         {   _adrc_r_w0 = w0;        }
+    void set_adrc_roll_b0(float b0)         {   _adrc_r_b0 = b0;        }
 
-    void set_adrc_b0(float b0) {
-        _adrc_r_b0 = b0;
-        _adrc_p_b0 = b0;
-    }
+    void set_adrc_pitch_beta1(float beta1)  { _adrc_p_beta1 = beta1;    }
+    void set_adrc_pitch_beta2(float beta2)  { _adrc_p_beta2 = beta2;    }
+    void set_adrc_pitch_w0(float w0)        {   _adrc_p_w0 = w0;        }
+    void set_adrc_pitch_b0(float b0)        {   _adrc_p_b0 = b0;        }
+    
+    // get ADRC roll pitch parameters
+    //called in autotune to get original ADRC value
+    float get_adrc_roll_beta1() { return _adrc_r_beta1; }
+    float get_adrc_roll_beta2() { return _adrc_r_beta2; }
+    float get_adrc_roll_b0()    { return _adrc_r_b0;    }
 
-    void set_adrc_w0(float w0)
-    {
-        _adrc_r_w0 = w0;
-        _adrc_p_w0 = w0;
-    }
+    float get_adrc_pitch_beta1() { return _adrc_p_beta1; }
+    float get_adrc_pitch_beta2() { return _adrc_p_beta2; }
+    float get_adrc_pitch_b0()    { return _adrc_p_b0;    }
 
-    void set_adrc_beta1(float beta1)
-    {
-        _adrc_r_beta1 = beta1;
-        _adrc_p_beta1 = beta1;
-    }
-
-    void set_adrc_beta2(float beta2)
-    {
-        _adrc_r_beta2 = beta2;
-        _adrc_p_beta2 = beta2;
-    }
 
 protected:
 
