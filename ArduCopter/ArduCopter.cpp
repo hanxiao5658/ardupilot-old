@@ -324,6 +324,7 @@ void Copter::fourhundred_hz_logging()
         Log_Write_ADRCposition();
         Log_Write_ADRCTD();
         Log_Write_PIDresult();
+        Log_Write_disturbance_result();
     
 }
 

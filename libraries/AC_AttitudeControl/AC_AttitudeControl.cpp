@@ -10,6 +10,7 @@ extern Fhan_Data ADRCROLL;
 extern Fhan_Data ADRCPITCH;
 extern Fhan_Data ADRCYAW;
 extern Fhan_Data ADRCdata;
+extern Fhan_Data ADRC_ESO_autotune;
 //int a=0;
 
 //ofstream angularfile("angulardata.txt"); //创建angulardata
@@ -244,6 +245,18 @@ const AP_Param::GroupInfo AC_AttitudeControl::var_info[] = {
     // @Range: 7 14
     // @User: Standard
     AP_GROUPINFO("dis_ch", 34, AC_AttitudeControl, disturbance_ch, 14),
+
+    // @Param: ADRC_T_B0
+    // @DisplayName: ADRC TEST b0
+    // @Description: ADRC TEST b0
+    // @User: Standard
+    AP_GROUPINFO("ADRC_T_B0", 35, AC_AttitudeControl, _adrc_t_b0, 500),
+
+    // @Param: ADRC_T_W0
+    // @DisplayName: ADRC TEST W0
+    // @Description: ADRC TEST W0
+    // @User: Standard
+    AP_GROUPINFO("ADRC_T_W0", 36, AC_AttitudeControl, _adrc_t_w0, 100),
 
     AP_GROUPEND
 };
@@ -982,12 +995,28 @@ float AC_AttitudeControl::rate_target_to_motor_roll(float rate_actual_rads, floa
     output = ADRCROLL.ADRC_final_signal ;
 */
 ////////////////////////////////////////////////////////////////////////////////////////////////  
-//use ch14 to simulate disturbance by reduce 0.3 of output
+    //set ADRC_test parameter
+    ADRC_ESO_autotune.b0 = _adrc_t_b0;
+    ADRC_ESO_autotune.w0 = _adrc_t_w0;
+    
+    // call eso autotune , input is final control signal (output) and actual rate , result is z2/b0 
+    ESO(&ADRC_ESO_autotune , output ,rate_actual_rads, ADRCROLL.w0);
+
+    //use ch14 to simulate disturbance by reduce 0.3 of output
     uint16_t roll_dis_radio_in = (disturbance_ch >= 7) ? RC_Channels::rc_channel(disturbance_ch - 1)->get_radio_in() : 0;
-    if (roll_dis_radio_in > 1700)
-    {
-        output = output - 0.3 ;
+    if (roll_dis_radio_in > 1700 || roll_disturbance_flag > 0.5)
+    {   
+        // set disturbance 
+        roll_disturbance = 0.3;
+        // add disturbance by -0.3 
+        output = output - roll_disturbance ;
     }
+    else
+    {
+        // reset disturbance
+        roll_disturbance = 0.0;
+    }
+    
 
 ////////////////////////////////////////////////////////////////////////////////////////////////
     // Constrain output
@@ -1056,7 +1085,28 @@ float AC_AttitudeControl::rate_target_to_motor_pitch(float rate_actual_rads, flo
     output = ADRCPITCH.ADRC_final_signal ;
 */  
 ////////////////////////////////////////////////////////////////////////////////////////////////
+    //set ADRC_test parameter
+    //ADRC_ESO_autotune.b0 = _adrc_t_b0;
+    //ADRC_ESO_autotune.w0 = _adrc_t_w0;
 
+    // call eso autotune , input is final control signal (output) and actual rate , result is z2/b0 
+    //ESO(&ADRC_ESO_autotune , output ,rate_actual_rads, ADRCPITCH.w0);
+    
+    //use ch14 to simulate disturbance by reduce 0.3 of output
+    uint16_t pitch_dis_radio_in = (disturbance_ch >= 7) ? RC_Channels::rc_channel(disturbance_ch - 1)->get_radio_in() : 0;
+    if ( pitch_dis_radio_in > 1700 || pitch_disturbance_flag > 0.5)
+    {   
+        // set disturbance 
+        pitch_disturbance = 0.3;
+        // add disturbance by -0.3 
+        output = output - pitch_disturbance ;
+    }
+    else
+    {
+        // reset disturbance
+        pitch_disturbance = 0.0;
+    }
+////////////////////////////////////////////////////////////////////////////////////////////////
     // Constrain output
     return constrain_float(output, -1.0f, 1.0f);
   

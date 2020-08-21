@@ -8,6 +8,7 @@ extern POS_Fhan_Data ADRC_POS_Z;
 extern Fhan_Data ADRCROLL;
 extern Fhan_Data ADRCPITCH;
 extern Fhan_Data ADRCYAW;
+extern Fhan_Data ADRC_ESO_autotune;
 // Code to Write and Read packets from DataFlash log memory
 // Code to interact with the user to dump or erase logs
 
@@ -406,12 +407,12 @@ void Copter::Log_Write_ADRCattitude()
         roll_p              : ADRCROLL.ADRC_P_signal,
         roll_d              : ADRCROLL.ADRC_D_signal,
         roll_z1             : ADRCROLL.z1,
-        roll_z2             : ADRCROLL.z2/ADRCROLL.b0,
+        roll_z2             : -(ADRCROLL.z2/ADRCROLL.b0),
         roll_final_signal   : ADRCROLL.ADRC_final_signal,
         pitch_p              : ADRCPITCH.ADRC_P_signal,
         pitch_d              : ADRCPITCH.ADRC_D_signal,
         pitch_z1             : ADRCPITCH.z1,
-        pitch_z2             : ADRCPITCH.z2/ADRCPITCH.b0,
+        pitch_z2             : -(ADRCPITCH.z2/ADRCPITCH.b0),
         pitch_final_signal   : ADRCPITCH.ADRC_final_signal,
     };
     DataFlash.WriteBlock(&pkt, sizeof(pkt));
@@ -535,6 +536,8 @@ struct PACKED log_ADRCpara {
     float pitch_rate_b2;
     float pitch_rate_b0;
 
+    float test_b0 ;
+
 };
 
 void Copter::Log_Write_ADRCpara()
@@ -549,7 +552,8 @@ void Copter::Log_Write_ADRCpara()
         pitch_rate_b1             : ADRCPITCH.beta_1,
         pitch_rate_b2             : ADRCPITCH.beta_2,
         pitch_rate_b0            : ADRCPITCH.b0,
- 
+
+        test_b0                  : ADRC_ESO_autotune.b0,
         
     };
     DataFlash.WriteBlock(&pkt, sizeof(pkt));
@@ -590,6 +594,43 @@ void Copter::Log_Write_PIDresult()
     };
     DataFlash.WriteBlock(&pkt, sizeof(pkt));
 }
+
+/////////////////////////////////////////////////////////////////
+// Write an disturbance flag packet
+struct PACKED log_disturbance_flag {
+    LOG_PACKET_HEADER;
+    uint64_t time_us;
+    float roll_disturbance_flag;
+    float roll_disturbance;
+    float roll_test_z1 ;
+    float roll_test_z2 ;
+   
+    float pitch_disturbance_flag;
+    float pitch_disturbance;
+    float pitch_test_z1 ;
+    float pitch_test_z2 ;
+
+};
+
+void Copter::Log_Write_disturbance_result()
+{
+ struct log_disturbance_flag pkt = {
+        LOG_PACKET_HEADER_INIT(LOG_disturbance_flag_MSG),
+        time_us         : AP_HAL::micros64(),
+        roll_disturbance_flag       : attitude_control->roll_disturbance_flag,
+        roll_disturbance            : attitude_control->roll_disturbance,
+        roll_test_z1                : ADRC_ESO_autotune.z1,
+        roll_test_z2                : -(ADRC_ESO_autotune.z2/ADRC_ESO_autotune.b0),
+
+        pitch_disturbance_flag             : attitude_control->pitch_disturbance_flag,
+        pitch_disturbance             : attitude_control->pitch_disturbance,
+        pitch_test_z1                : ADRC_ESO_autotune.z1,
+        pitch_test_z2                : -(ADRC_ESO_autotune.z2/ADRC_ESO_autotune.b0),
+               
+    };
+    DataFlash.WriteBlock(&pkt, sizeof(pkt));
+}
+/////////////////////////////////////////////////////////////////
 
 // logs when baro or compass becomes unhealthy
 void Copter::Log_Sensor_Health()
@@ -755,12 +796,13 @@ const struct LogStructure Copter::log_structure[] = {
       "ATD",   "Qffffffffff",   "TimeUS,r_tr,r_ar,r_t,r_v1,r_v2,p_tr,p_ar,p_t,p_v1,p_v2", "s----------", "F----------" },
 
     { LOG_ADRC_para_MSG, sizeof(log_ADRCpara),
-      "APAR",   "Qffffff",   "TimeUS,r_b1,r_b2,r_b0,p_b1,p_b2,p_b0", "s------", "F------" },
+      "APAR",   "Qfffffff",   "TimeUS,r_b1,r_b2,r_b0,p_b1,p_b2,p_b0,t_b0", "s-------", "F-------" },
 
     { LOG_PID_result_MSG, sizeof(log_PIDresult),
       "PID2",   "Qffffffff",   "TimeUS,r_P,r_I,r_D,r_PID,p_P,p_I,p_D,p_PID", "s--------", "F--------", },
 
-
+    { LOG_disturbance_flag_MSG, sizeof(log_disturbance_flag),
+      "FLAG",   "Qffffffff",   "TimeUS,r_flag,r_dis,r_t_z1,r_t_z2,p_flag,p_dis,p_t_z1,p_t_z2", "s--------", "F--------", },
 
 ////////////////////////////////////////////////////////////////////////////////////
 

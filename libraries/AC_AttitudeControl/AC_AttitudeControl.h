@@ -69,7 +69,7 @@ public:
     virtual ~AC_AttitudeControl() {}
 
 //////////////////////////////////////////////
-    
+    // for logging 
     AP_Float _roll_rate_P;
     AP_Float _roll_rate_I;
     AP_Float _roll_rate_D;
@@ -79,6 +79,14 @@ public:
     AP_Float _pitch_rate_I;
     AP_Float _pitch_rate_D;
     AP_Float _pitch_rate_PID;
+
+    // disturbance called in attcontrol.cpp 
+    float roll_disturbance = 0.0f ;
+    float pitch_disturbance = 0.0f;
+
+    // disturbance flag called in autotune to start a disturbance
+    float roll_disturbance_flag = 0.0f; 
+    float pitch_disturbance_flag = 0.0f;
 
 //////////////////////////////////////////////
 
@@ -334,6 +342,10 @@ public:
     float get_adrc_pitch_beta2() { return _adrc_p_beta2; }
     float get_adrc_pitch_b0()    { return _adrc_p_b0;    }
 
+    // on/off disturbance by setting disturbance flag
+    void set_adrc_roll_disturbance_flag(float disturbance_flag)   { roll_disturbance_flag = disturbance_flag; }
+    void set_adrc_pitch_disturbance_flag(float disturbance_flag)   { pitch_disturbance_flag = disturbance_flag; }
+
 
 protected:
 
@@ -460,6 +472,8 @@ protected:
     AP_Float _adrc_y_b0;
     AP_Float _adrc_y_w0;
     AP_Float disturbance_ch;
+    AP_Float _adrc_t_b0;
+    AP_Float _adrc_t_w0;
     
 
 protected:

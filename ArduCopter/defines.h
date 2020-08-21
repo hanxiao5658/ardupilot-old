@@ -325,6 +325,7 @@ enum LoggingParameters {
      LOG_ADRC_TD_MSG,
      LOG_ADRC_para_MSG,
      LOG_PID_result_MSG,
+     LOG_disturbance_flag_MSG,
 
 };
 

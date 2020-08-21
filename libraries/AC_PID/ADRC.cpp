@@ -12,6 +12,7 @@ Fhan_Data ADRCROLL;
 Fhan_Data ADRCPITCH;
 Fhan_Data ADRCYAW;
 Fhan_Data ADRCdata;
+Fhan_Data ADRC_ESO_autotune;
 
 
 /*---constrain funtion make sure output is not too big or too small--------*/
