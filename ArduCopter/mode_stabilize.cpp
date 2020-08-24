@@ -1,5 +1,9 @@
 #include "Copter.h"
 
+extern Fhan_Data ADRCROLL;
+extern Fhan_Data ADRCPITCH;
+extern Fhan_Data ADRCYAW;
+extern Fhan_Data ADRC_ESO_autotune;
 /*
  * Init and run calls for stabilize flight mode
  */
@@ -12,6 +16,12 @@ bool Copter::ModeStabilize::init(bool ignore_checks)
             (get_pilot_desired_throttle(channel_throttle->get_control_in()) > get_non_takeoff_throttle())) {
         return false;
     }
+    
+    ///////////////////////////////
+    // use this to decide record time 
+    time_record_flag = true;
+
+    ADRC_ESO_autotune.b0 = attitude_control->_adrc_t_b0;
 
     return true;
 }
@@ -56,4 +66,65 @@ void Copter::ModeStabilize::run()
 
     // output pilot's throttle
     attitude_control->set_throttle_out(pilot_throttle_scaled, true, g.throttle_filt);
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    // we have 3 steps : 
+    //                      1. call disturbance , 
+    //                      2.calculate error between ESO.z2/b0 and disturbance
+    //                      3. update b0
+         
+    uint16_t roll_dis_radio_in =  RC_Channels::rc_channel(attitude_control->tun_ch - 1)->get_radio_in();
+    if (roll_dis_radio_in > 1700 && ADRC_ESO_autotune.b0 < 2000.0) // bigger than 1700 then start call disturbance
+    {   
+                  
+        // step 1 call disturbance , disturbance_ch(14) is control channel for tunning
+        // disturbance should last 1 seconds , and 1 second for no disturbance .
+        // every tunning loop last for 2 seconds (1 second disturbance + 1 second no disturbance)
+        
+        if (time_record_flag)
+        {
+            attitude_control->roll_disturbance_flag = 1.0;  // disturbance_on 
+            dis_start_time = millis();                      // record disturbance start time
+            time_record_flag = false;                      // dis record time  
+        }
+        
+        // check timeout 
+        if (millis() > dis_start_time + 2000.0) 
+        {
+            attitude_control->roll_disturbance_flag = 0.0; // timeout end disturbance 
+        }
+        
+        if (millis() < dis_start_time + 4000.0)
+        {
+            // step 2 calulate error between -ESO.z2/b0 and disturbance
+            ADRC_ESO_autotune.ADRC_ESO_error += fabs( (-ADRC_ESO_autotune.z2/ADRC_ESO_autotune.b0) - attitude_control->roll_disturbance ) ;
+        }
+
+        if (millis() > dis_start_time + 4000.0)
+        {   
+            // over 2 second start a new tunning loop
+
+            // reset time record flag
+            time_record_flag = true; 
+
+            // record final error
+            ADRC_ESO_autotune.ADRC_ESO_final_error = ADRC_ESO_autotune.ADRC_ESO_error;
+            // reset ESO.z2 and error
+            ADRC_ESO_autotune.z2 = 0.0;
+            ADRC_ESO_autotune.ADRC_ESO_error = 0.0;
+            // step 3 update b0
+            attitude_control->_adrc_t_b0 += 50.0 ;  
+            gcs().send_text(MAV_SEVERITY_INFO, "b0:%f  w0:%f", ADRC_ESO_autotune.b0,ADRC_ESO_autotune.w0);
+
+        }
+          
+        
+    } 
+    else
+    {
+        attitude_control->roll_disturbance_flag = 0.0;  // disturbance off
+    }
+    
+    
+
 }

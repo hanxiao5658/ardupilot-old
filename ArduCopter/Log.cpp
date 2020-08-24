@@ -531,11 +531,9 @@ struct PACKED log_ADRCpara {
     float roll_rate_b1;
     float roll_rate_b2;
     float roll_rate_b0;
-
     float pitch_rate_b1;
     float pitch_rate_b2;
     float pitch_rate_b0;
-
     float test_b0 ;
 
 };
@@ -548,11 +546,9 @@ void Copter::Log_Write_ADRCpara()
         roll_rate_b1             : ADRCROLL.beta_1,
         roll_rate_b2             : ADRCROLL.beta_2,
         roll_rate_b0             : ADRCROLL.b0,
-
         pitch_rate_b1             : ADRCPITCH.beta_1,
         pitch_rate_b2             : ADRCPITCH.beta_2,
         pitch_rate_b0            : ADRCPITCH.b0,
-
         test_b0                  : ADRC_ESO_autotune.b0,
         
     };
@@ -568,11 +564,11 @@ struct PACKED log_PIDresult {
     float roll_rate_I_result;
     float roll_rate_D_result;
     float roll_rate_PID_result;
-
     float pitch_rate_P_result;
     float pitch_rate_I_result;
     float pitch_rate_D_result;
     float pitch_rate_PID_result;
+    float ESO_error ;
 };
 
 void Copter::Log_Write_PIDresult()
@@ -584,11 +580,11 @@ void Copter::Log_Write_PIDresult()
         roll_rate_I_result             : attitude_control->_roll_rate_I,
         roll_rate_D_result             : attitude_control->_roll_rate_D,
         roll_rate_PID_result           : attitude_control->_roll_rate_PID,
-
         pitch_rate_P_result             : attitude_control->_pitch_rate_P,
         pitch_rate_I_result             : attitude_control->_pitch_rate_I,
         pitch_rate_D_result             : attitude_control->_pitch_rate_D,
         pitch_rate_PID_result           : attitude_control->_pitch_rate_PID,
+        ESO_error                       :ADRC_ESO_autotune.ADRC_ESO_error,
  
         
     };
@@ -603,12 +599,13 @@ struct PACKED log_disturbance_flag {
     float roll_disturbance_flag;
     float roll_disturbance;
     float roll_test_z1 ;
-    float roll_test_z2 ;
-   
+    float roll_test_z2 ; 
     float pitch_disturbance_flag;
     float pitch_disturbance;
     float pitch_test_z1 ;
     float pitch_test_z2 ;
+    float ESO_error2 ;
+    
 
 };
 
@@ -616,17 +613,17 @@ void Copter::Log_Write_disturbance_result()
 {
  struct log_disturbance_flag pkt = {
         LOG_PACKET_HEADER_INIT(LOG_disturbance_flag_MSG),
-        time_us         : AP_HAL::micros64(),
+        time_us                     : AP_HAL::micros64(),
         roll_disturbance_flag       : attitude_control->roll_disturbance_flag,
         roll_disturbance            : attitude_control->roll_disturbance,
         roll_test_z1                : ADRC_ESO_autotune.z1,
         roll_test_z2                : -(ADRC_ESO_autotune.z2/ADRC_ESO_autotune.b0),
-
-        pitch_disturbance_flag             : attitude_control->pitch_disturbance_flag,
-        pitch_disturbance             : attitude_control->pitch_disturbance,
-        pitch_test_z1                : ADRC_ESO_autotune.z1,
-        pitch_test_z2                : -(ADRC_ESO_autotune.z2/ADRC_ESO_autotune.b0),
-               
+        pitch_disturbance_flag      : attitude_control->pitch_disturbance_flag,
+        pitch_disturbance           : attitude_control->pitch_disturbance,
+        pitch_test_z1               : ADRC_ESO_autotune.z1,
+        pitch_test_z2               : -(ADRC_ESO_autotune.z2/ADRC_ESO_autotune.b0),   
+        ESO_error2                       :ADRC_ESO_autotune.ADRC_ESO_final_error,
+        
     };
     DataFlash.WriteBlock(&pkt, sizeof(pkt));
 }
@@ -799,10 +796,10 @@ const struct LogStructure Copter::log_structure[] = {
       "APAR",   "Qfffffff",   "TimeUS,r_b1,r_b2,r_b0,p_b1,p_b2,p_b0,t_b0", "s-------", "F-------" },
 
     { LOG_PID_result_MSG, sizeof(log_PIDresult),
-      "PID2",   "Qffffffff",   "TimeUS,r_P,r_I,r_D,r_PID,p_P,p_I,p_D,p_PID", "s--------", "F--------", },
+      "PID2",   "Qfffffffff",   "TimeUS,r_P,r_I,r_D,r_PID,p_P,p_I,p_D,p_PID,ESO_e", "s---------", "F---------", },
 
     { LOG_disturbance_flag_MSG, sizeof(log_disturbance_flag),
-      "FLAG",   "Qffffffff",   "TimeUS,r_flag,r_dis,r_t_z1,r_t_z2,p_flag,p_dis,p_t_z1,p_t_z2", "s--------", "F--------", },
+      "FLAG",   "Qfffffffff",   "TimeUS,r_flag,r_dis,r_t_z1,r_t_z2,p_flag,p_dis,p_t_z1,p_t_z2,e2", "s---------", "F---------", },
 
 ////////////////////////////////////////////////////////////////////////////////////
 

@@ -1111,6 +1111,10 @@ public:
     bool allows_arming(bool from_gcs) const override { return true; };
     bool is_autopilot() const override { return false; }
 
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    uint32_t dis_start_time;                       // start time of current tuning step (used for timeout checks)
+    bool time_record_flag ;
+
 protected:
 
     const char *name() const override { return "STABILIZE"; }

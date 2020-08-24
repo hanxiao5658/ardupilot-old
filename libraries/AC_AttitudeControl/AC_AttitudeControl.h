@@ -88,6 +88,10 @@ public:
     float roll_disturbance_flag = 0.0f; 
     float pitch_disturbance_flag = 0.0f;
 
+    AP_Float disturbance_ch;
+    AP_Float tun_ch;
+    AP_Float _adrc_t_b0;
+
 //////////////////////////////////////////////
 
     // pid accessors
@@ -471,8 +475,7 @@ protected:
     AP_Float _adrc_p_beta2;
     AP_Float _adrc_y_b0;
     AP_Float _adrc_y_w0;
-    AP_Float disturbance_ch;
-    AP_Float _adrc_t_b0;
+    
     AP_Float _adrc_t_w0;
     
 

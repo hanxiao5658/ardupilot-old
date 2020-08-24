@@ -19,7 +19,7 @@ float z1;
 float z2; // disturbance result
 float e;
 float y;  //feedback signal
-float b0= 500;   //tunning parameter
+float b0= 20;   //tunning parameter
 float w0 = 50;  //tunning parameter
 
 /*--- NLSEF paramter ---*/
@@ -46,6 +46,8 @@ float actual_velocity = 0;
 float target_velocity = 0;
 float _i=0;
 int ADRC_flag = 0 ;
+float ADRC_ESO_error = 0.0;
+float ADRC_ESO_final_error = 0.0;
 
 
 
