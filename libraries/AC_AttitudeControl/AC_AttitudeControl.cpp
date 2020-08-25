@@ -1003,18 +1003,18 @@ float AC_AttitudeControl::rate_target_to_motor_roll(float rate_actual_rads, floa
 */
 ////////////////////////////////////////////////////////////////////////////////////////////////  
     //set ADRC_test parameter
-    ADRC_ESO_autotune.b0 = _adrc_t_b0;
-    ADRC_ESO_autotune.w0 = _adrc_t_w0;
+    //ADRC_ESO_autotune.b0 = _adrc_t_b0;
+    //ADRC_ESO_autotune.w0 = _adrc_t_w0;
     
     // call eso autotune , input is final control signal (output) and actual rate , result is z2/b0 
-    ESO(&ADRC_ESO_autotune , output ,rate_actual_rads, ADRCROLL.w0);
+    //ESO(&ADRC_ESO_autotune , output ,rate_actual_rads, ADRCROLL.w0);
 
     //use ch14 to simulate disturbance by reduce 0.3 of output
     uint16_t roll_dis_radio_in = (disturbance_ch >= 7) ? RC_Channels::rc_channel(disturbance_ch - 1)->get_radio_in() : 0;
     if (roll_dis_radio_in > 1700 || roll_disturbance_flag > 0.5)
     {   
         // set disturbance 
-        roll_disturbance = 0.3;
+        //roll_disturbance = 0.3;
         // add disturbance by -0.3 
         output = output - roll_disturbance ;
     }
@@ -1093,18 +1093,18 @@ float AC_AttitudeControl::rate_target_to_motor_pitch(float rate_actual_rads, flo
 */  
 ////////////////////////////////////////////////////////////////////////////////////////////////
     //set ADRC_test parameter
-    //ADRC_ESO_autotune.b0 = _adrc_t_b0;
-    //ADRC_ESO_autotune.w0 = _adrc_t_w0;
+    ADRC_ESO_autotune.b0 = _adrc_t_b0;
+    ADRC_ESO_autotune.w0 = _adrc_t_w0;
 
     // call eso autotune , input is final control signal (output) and actual rate , result is z2/b0 
-    //ESO(&ADRC_ESO_autotune , output ,rate_actual_rads, ADRCPITCH.w0);
+    ESO(&ADRC_ESO_autotune , output ,rate_actual_rads, ADRCPITCH.w0);
     
     //use ch14 to simulate disturbance by reduce 0.3 of output
     uint16_t pitch_dis_radio_in = (disturbance_ch >= 7) ? RC_Channels::rc_channel(disturbance_ch - 1)->get_radio_in() : 0;
     if ( pitch_dis_radio_in > 1700 || pitch_disturbance_flag > 0.5)
     {   
         // set disturbance 
-        //pitch_disturbance = 0.3;
+        pitch_disturbance = 0.3;
         // add disturbance by -0.3 
         output = output - pitch_disturbance ;
     }

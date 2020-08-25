@@ -74,7 +74,7 @@ void Copter::ModeStabilize::run()
     //                      3. update b0
          
     uint16_t roll_dis_radio_in =  RC_Channels::rc_channel(attitude_control->tun_ch - 1)->get_radio_in();
-    if (roll_dis_radio_in > 1700 && ADRC_ESO_autotune.b0 < 2000.0) // bigger than 1700 then start call disturbance
+    if (roll_dis_radio_in > 1700 && ADRC_ESO_autotune.b0 < 2000.0) // ch13 bigger than 1700 then start call disturbance
     {   
                   
         // step 1 call disturbance , disturbance_ch(14) is control channel for tunning
@@ -83,7 +83,7 @@ void Copter::ModeStabilize::run()
         
         if (time_record_flag)
         {
-            attitude_control->roll_disturbance_flag = 1.0;  // disturbance_on 
+            attitude_control->pitch_disturbance_flag = 1.0;  // disturbance_on 
             dis_start_time = millis();                      // record disturbance start time
             time_record_flag = false;                      // dis record time  
         }
@@ -91,13 +91,13 @@ void Copter::ModeStabilize::run()
         // check timeout 
         if (millis() > dis_start_time + 2000.0) 
         {
-            attitude_control->roll_disturbance_flag = 0.0; // timeout end disturbance 
+            attitude_control->pitch_disturbance_flag = 0.0; // timeout end disturbance 
         }
         
         if (millis() < dis_start_time + 4000.0)
         {
             // step 2 calulate error between -ESO.z2/b0 and disturbance
-            ADRC_ESO_autotune.ADRC_ESO_error += fabs( (-ADRC_ESO_autotune.z2/ADRC_ESO_autotune.b0) - attitude_control->roll_disturbance ) ;
+            ADRC_ESO_autotune.ADRC_ESO_error += fabs( (-ADRC_ESO_autotune.z2/ADRC_ESO_autotune.b0) - attitude_control->pitch_disturbance_flag ) ;
         }
 
         if (millis() > dis_start_time + 4000.0)
