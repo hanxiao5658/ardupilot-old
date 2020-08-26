@@ -34,6 +34,9 @@ void Copter::ModeStabilize::run()
     float target_yaw_rate;
     float pilot_throttle_scaled;
 
+    // get radio of tunning ch13
+    uint16_t roll_dis_radio_in =  RC_Channels::rc_channel(attitude_control->tun_ch - 1)->get_radio_in();
+
     // if not armed set throttle to zero and exit immediately
     if (!motors->armed() || ap.throttle_zero || !motors->get_interlock()) {
         zero_throttle_and_relax_ac();
@@ -50,18 +53,23 @@ void Copter::ModeStabilize::run()
 
     AP_Vehicle::MultiCopter &aparm = copter.aparm;
 
-    // convert pilot input to lean angles
-    get_pilot_desired_lean_angles(target_roll, target_pitch, aparm.angle_max, aparm.angle_max);
-
     // get pilot's desired yaw rate
     target_yaw_rate = get_pilot_desired_yaw_rate(channel_yaw->get_control_in());
 
     // get pilot's desired throttle
     pilot_throttle_scaled = get_pilot_desired_throttle(channel_throttle->get_control_in());
 
+    //diable those 2 functions so that we can override rate_control    
+    if (roll_dis_radio_in < 1700)
+    {
+    // convert pilot input to lean angles
+    get_pilot_desired_lean_angles(target_roll, target_pitch, aparm.angle_max, aparm.angle_max);
+   
     // call attitude controller
     attitude_control->input_euler_angle_roll_pitch_euler_rate_yaw(target_roll, target_pitch, target_yaw_rate);
 
+    }
+ 
     // body-frame rate controller is run directly from 100hz loop
 
     // output pilot's throttle
@@ -73,7 +81,7 @@ void Copter::ModeStabilize::run()
     //                      2.calculate error between ESO.z2/b0 and disturbance
     //                      3. update b0
          
-    uint16_t roll_dis_radio_in =  RC_Channels::rc_channel(attitude_control->tun_ch - 1)->get_radio_in();
+    
     if (roll_dis_radio_in > 1700 && ADRC_ESO_autotune.b0 < 2000.0) // ch13 bigger than 1700 then start call disturbance
     {   
                   
@@ -83,7 +91,8 @@ void Copter::ModeStabilize::run()
         
         if (time_record_flag)
         {
-            attitude_control->pitch_disturbance_flag = 1.0;  // disturbance_on 
+            attitude_control->rate_bf_pitch_target(900.0);  // over ride pitch rate control
+            //attitude_control->pitch_disturbance_flag = 1.0;  // disturbance_on 
             dis_start_time = millis();                      // record disturbance start time
             time_record_flag = false;                      // dis record time  
         }
@@ -91,7 +100,12 @@ void Copter::ModeStabilize::run()
         // check timeout 
         if (millis() > dis_start_time + 2000.0) 
         {
-            attitude_control->pitch_disturbance_flag = 0.0; // timeout end disturbance 
+            // convert pilot input to lean angles
+            get_pilot_desired_lean_angles(target_roll, target_pitch, aparm.angle_max, aparm.angle_max);
+            // call attitude controller
+            attitude_control->input_euler_angle_roll_pitch_euler_rate_yaw(target_roll, target_pitch, target_yaw_rate);
+            // timeout end disturbance 
+            attitude_control->pitch_disturbance_flag = 0.0;
         }
         
         if (millis() < dis_start_time + 4000.0)
