@@ -166,7 +166,7 @@ fhan_Input->u=fhan_Input->u0-fhan_Input->k*fhan_Input->z2/fhan_Input->b0;
 
   
 /*-------output control signal --------*/
-fhan_Input->u=Constrain_Float(fhan_Input->u,-1,1); 
+//fhan_Input->u=Constrain_Float(fhan_Input->u,-1,1); 
 
 /*----------for logging-----------*/
 fhan_Input->ADRC_final_signal = fhan_Input->u;    

@@ -250,7 +250,7 @@ const AP_Param::GroupInfo AC_AttitudeControl::var_info[] = {
     // @DisplayName: ADRC TEST b0
     // @Description: ADRC TEST b0
     // @User: Standard
-    AP_GROUPINFO("ADRC_T_B0", 35, AC_AttitudeControl, _adrc_t_b0, 0.0),
+    AP_GROUPINFO("ADRC_T_B0", 35, AC_AttitudeControl, _adrc_t_b0, 10.0),
 
     // @Param: ADRC_T_W0
     // @DisplayName: ADRC TEST W0
@@ -1104,7 +1104,7 @@ float AC_AttitudeControl::rate_target_to_motor_pitch(float rate_actual_rads, flo
     if ( pitch_dis_radio_in > 1700 || pitch_disturbance_flag > 0.5)
     {   
         // set disturbance 
-        pitch_disturbance = 0.3;
+        pitch_disturbance = 0.4;
         // add disturbance by -0.3 
         output = output - pitch_disturbance ;
     }

@@ -113,7 +113,7 @@ void Copter::ModeStabilize::run()
             ADRC_ESO_autotune.z2 = 0.0;
             ADRC_ESO_autotune.ADRC_ESO_error = 0.0;
             // step 3 update b0
-            attitude_control->_adrc_t_b0 += 50.0 ;  
+            attitude_control->_adrc_t_b0 += 100.0 ;  
             gcs().send_text(MAV_SEVERITY_INFO, "b0:%f  w0:%f", ADRC_ESO_autotune.b0,ADRC_ESO_autotune.w0);
 
         }
@@ -122,7 +122,7 @@ void Copter::ModeStabilize::run()
     } 
     else
     {
-        attitude_control->roll_disturbance_flag = 0.0;  // disturbance off
+        attitude_control->pitch_disturbance_flag = 0.0;  // disturbance off
     }
     
     
