@@ -46,8 +46,10 @@ float actual_velocity = 0;
 float target_velocity = 0;
 float _i=0;
 int ADRC_flag = 0 ;
-float ADRC_ESO_error = 0.0;
-float ADRC_ESO_final_error = 0.0;
+float ADRC_ESO_error1 = 0.0;
+float ADRC_ESO_error2 = 0.0;
+float ADRC_ESO_z1_error = 0.0;
+float ADRC_ESO_z2_error = 0.0;
 
 
 

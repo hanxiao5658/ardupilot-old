@@ -584,7 +584,7 @@ void Copter::Log_Write_PIDresult()
         pitch_rate_I_result             : attitude_control->_pitch_rate_I,
         pitch_rate_D_result             : attitude_control->_pitch_rate_D,
         pitch_rate_PID_result           : attitude_control->_pitch_rate_PID,
-        ESO_error                       :ADRC_ESO_autotune.ADRC_ESO_error,
+        ESO_error                       :ADRC_ESO_autotune.ADRC_ESO_z2_error,
  
         
     };
@@ -604,6 +604,7 @@ struct PACKED log_disturbance_flag {
     float pitch_disturbance;
     float pitch_test_z1 ;
     float pitch_test_z2 ;
+    float ESO_error1 ;
     float ESO_error2 ;
     
 
@@ -621,8 +622,9 @@ void Copter::Log_Write_disturbance_result()
         pitch_disturbance_flag      : attitude_control->pitch_disturbance_flag,
         pitch_disturbance           : attitude_control->pitch_disturbance,
         pitch_test_z1               : ADRC_ESO_autotune.z1,
-        pitch_test_z2               : -(ADRC_ESO_autotune.z2/ADRC_ESO_autotune.b0),   
-        ESO_error2                       :ADRC_ESO_autotune.ADRC_ESO_final_error,
+        pitch_test_z2               : -(ADRC_ESO_autotune.z2/ADRC_ESO_autotune.b0),  
+        ESO_error1                       :ADRC_ESO_autotune.ADRC_ESO_z1_error, 
+        ESO_error2                       :ADRC_ESO_autotune.ADRC_ESO_z2_error,
         
     };
     DataFlash.WriteBlock(&pkt, sizeof(pkt));
@@ -799,7 +801,7 @@ const struct LogStructure Copter::log_structure[] = {
       "PID2",   "Qfffffffff",   "TimeUS,r_P,r_I,r_D,r_PID,p_P,p_I,p_D,p_PID,ESO_e", "s---------", "F---------", },
 
     { LOG_disturbance_flag_MSG, sizeof(log_disturbance_flag),
-      "FLAG",   "Qfffffffff",   "TimeUS,r_flag,r_dis,r_t_z1,r_t_z2,p_flag,p_dis,p_t_z1,p_t_z2,e2", "s---------", "F---------", },
+      "ATUN",   "Qffffffffff",   "TimeUS,r_f,r_dis,r_t_z1,r_t_z2,p_f,p_dis,p_t_z1,p_t_z2,e1,e2", "s----------", "F----------", },
 
 ////////////////////////////////////////////////////////////////////////////////////
 

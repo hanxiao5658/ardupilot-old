@@ -4,6 +4,7 @@ extern Fhan_Data ADRCROLL;
 extern Fhan_Data ADRCPITCH;
 extern Fhan_Data ADRCYAW;
 extern Fhan_Data ADRC_ESO_autotune;
+
 /*
  * Init and run calls for stabilize flight mode
  */
@@ -60,13 +61,13 @@ void Copter::ModeStabilize::run()
     pilot_throttle_scaled = get_pilot_desired_throttle(channel_throttle->get_control_in());
 
     //diable those 2 functions so that we can override rate_control    
-    if (roll_dis_radio_in < 1700)
+    //if (roll_dis_radio_in < 1700 )
     {
-    // convert pilot input to lean angles
-    get_pilot_desired_lean_angles(target_roll, target_pitch, aparm.angle_max, aparm.angle_max);
+        // convert pilot input to lean angles
+        get_pilot_desired_lean_angles(target_roll, target_pitch, aparm.angle_max, aparm.angle_max);
    
-    // call attitude controller
-    attitude_control->input_euler_angle_roll_pitch_euler_rate_yaw(target_roll, target_pitch, target_yaw_rate);
+        // call attitude controller
+        attitude_control->input_euler_angle_roll_pitch_euler_rate_yaw(target_roll, target_pitch, target_yaw_rate);
 
     }
  
@@ -77,22 +78,28 @@ void Copter::ModeStabilize::run()
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     // we have 3 steps : 
-    //                      1. call disturbance , 
-    //                      2.calculate error between ESO.z2/b0 and disturbance
-    //                      3. update b0
+    //                      1.  call disturbance , 
+    //                      2.  calculate error between ESO.z2/b0 and disturbance
+    //                      3.  update b0
          
     
-    if (roll_dis_radio_in > 1700 && ADRC_ESO_autotune.b0 < 2000.0) // ch13 bigger than 1700 then start call disturbance
+    if (roll_dis_radio_in > 1700 && ADRC_ESO_autotune.b0 < 200.0) // ch13 bigger than 1700 then start call disturbance
     {   
                   
-        // step 1 call disturbance , disturbance_ch(14) is control channel for tunning
+        // step 1 call disturbance , disturbance_ch(13) is control channel for tunning
         // disturbance should last 1 seconds , and 1 second for no disturbance .
         // every tunning loop last for 2 seconds (1 second disturbance + 1 second no disturbance)
         
         if (time_record_flag)
         {
-            attitude_control->rate_bf_pitch_target(900.0);  // over ride pitch rate control
-            //attitude_control->pitch_disturbance_flag = 1.0;  // disturbance_on 
+            // reset test ESO
+            ADRC_ESO_autotune.z1 = 0.0;
+            ADRC_ESO_autotune.z2 = 0.0;
+            ADRC_ESO_autotune.ADRC_ESO_error1 = 0.0;
+            ADRC_ESO_autotune.ADRC_ESO_error2 = 0.0;
+
+            //attitude_control->rate_bf_pitch_target(1500.0);  // over ride pitch rate control
+            attitude_control->pitch_disturbance_flag = 1.0;  // disturbance_on 
             dis_start_time = millis();                      // record disturbance start time
             time_record_flag = false;                      // dis record time  
         }
@@ -110,8 +117,11 @@ void Copter::ModeStabilize::run()
         
         if (millis() < dis_start_time + 4000.0)
         {
-            // step 2 calulate error between -ESO.z2/b0 and disturbance
-            ADRC_ESO_autotune.ADRC_ESO_error += fabs( (-ADRC_ESO_autotune.z2/ADRC_ESO_autotune.b0) - attitude_control->pitch_disturbance_flag ) ;
+            // step 2 calulate error 
+            //error of z1 and real vel
+            ADRC_ESO_autotune.ADRC_ESO_error1 += fabs( ADRC_ESO_autotune.z1 - ADRCPITCH.actual_velocity ) ;
+            //error of z2 and real dis
+            ADRC_ESO_autotune.ADRC_ESO_error2 += fabs( (-ADRC_ESO_autotune.z2/ADRC_ESO_autotune.b0) - attitude_control->pitch_disturbance ) ;
         }
 
         if (millis() > dis_start_time + 4000.0)
@@ -122,12 +132,12 @@ void Copter::ModeStabilize::run()
             time_record_flag = true; 
 
             // record final error
-            ADRC_ESO_autotune.ADRC_ESO_final_error = ADRC_ESO_autotune.ADRC_ESO_error;
-            // reset ESO.z2 and error
-            ADRC_ESO_autotune.z2 = 0.0;
-            ADRC_ESO_autotune.ADRC_ESO_error = 0.0;
+            ADRC_ESO_autotune.ADRC_ESO_z1_error = ADRC_ESO_autotune.ADRC_ESO_error1;
+            ADRC_ESO_autotune.ADRC_ESO_z2_error = ADRC_ESO_autotune.ADRC_ESO_error2;
+
+            
             // step 3 update b0
-            attitude_control->_adrc_t_b0 += 100.0 ;  
+            attitude_control->_adrc_t_b0 += 10.0 ;  
             gcs().send_text(MAV_SEVERITY_INFO, "b0:%f  w0:%f", ADRC_ESO_autotune.b0,ADRC_ESO_autotune.w0);
 
         }
@@ -137,6 +147,12 @@ void Copter::ModeStabilize::run()
     else
     {
         attitude_control->pitch_disturbance_flag = 0.0;  // disturbance off
+
+        // convert pilot input to lean angles
+        get_pilot_desired_lean_angles(target_roll, target_pitch, aparm.angle_max, aparm.angle_max);
+   
+        // call attitude controller
+        attitude_control->input_euler_angle_roll_pitch_euler_rate_yaw(target_roll, target_pitch, target_yaw_rate);
     }
     
     
