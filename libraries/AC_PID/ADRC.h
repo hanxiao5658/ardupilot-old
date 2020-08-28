@@ -50,6 +50,7 @@ float ADRC_ESO_error1 = 0.0;
 float ADRC_ESO_error2 = 0.0;
 float ADRC_ESO_z1_error = 0.0;
 float ADRC_ESO_z2_error = 0.0;
+float after_filt_signal = 0.0;
 
 
 
@@ -71,6 +72,7 @@ float Fhan_ADRC(float x1_delta , float x2 ,float r , float h);
 //extern Fhan_Data ADRC_Pitch_Controller,ADRC_Roll_Controller;
 void ESO(Fhan_Data *fhan_Input, float PD_signal, float feedback_signal, float w0);
 void linear_Conbination_ADRC(Fhan_Data *fhan_Input);
-
+void ADRC_filter(Fhan_Data *fhan_Input , float input);
+float ADRC_get_filt_alpha(float set_filt_hz) ;
 
 

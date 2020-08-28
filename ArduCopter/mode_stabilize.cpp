@@ -119,9 +119,9 @@ void Copter::ModeStabilize::run()
         {
             // step 2 calulate error 
             //error of z1 and real vel
-            ADRC_ESO_autotune.ADRC_ESO_error1 += fabs( ADRC_ESO_autotune.z1 - ADRCPITCH.actual_velocity ) ;
+            ADRC_ESO_autotune.ADRC_ESO_error1 += fabsf( ADRC_ESO_autotune.z1 - ADRCPITCH.actual_velocity ) ;
             //error of z2 and real dis
-            ADRC_ESO_autotune.ADRC_ESO_error2 += fabs( (-ADRC_ESO_autotune.z2/ADRC_ESO_autotune.b0) - attitude_control->pitch_disturbance ) ;
+            ADRC_ESO_autotune.ADRC_ESO_error2 += fabsf( (-ADRC_ESO_autotune.z2/ADRC_ESO_autotune.b0) - attitude_control->pitch_disturbance ) ;
         }
 
         if (millis() > dis_start_time + 4000.0)

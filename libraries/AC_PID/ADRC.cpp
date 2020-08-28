@@ -142,6 +142,8 @@ fhan_Input->target_signal = expect_ADRC - feedback_ADRC ;
 
 float ADRC_error = fhan_Input->target_signal ;
 
+
+
 /*ADRC step 1    TD*/
  TD_ADRC(fhan_Input , ADRC_error );
 
@@ -173,3 +175,28 @@ fhan_Input->ADRC_final_signal = fhan_Input->u;
   
 }
 
+// calc_filt_alpha ,calculate the input filter alpha, default is 20
+float ADRC_get_filt_alpha(float set_filt_hz) 
+{
+    // just make sure filt is NOT 0
+    if (is_zero(set_filt_hz)) {
+        return 1.0f;
+    }
+
+    // calculate alpha
+    float dt = 0.0025;
+    float rc = 1/(M_2PI* set_filt_hz);
+    float filt_alpha = dt / (dt + rc);
+    return filt_alpha;
+}
+
+// filt input
+void ADRC_filter(Fhan_Data *fhan_Input , float input)
+{
+
+
+    // update filter and calculate derivative
+    float input_filt_change = ADRC_get_filt_alpha(20.0) * (input - fhan_Input->after_filt_signal);
+    fhan_Input->after_filt_signal = fhan_Input->after_filt_signal + input_filt_change;
+
+}

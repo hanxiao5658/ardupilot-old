@@ -584,7 +584,7 @@ void Copter::Log_Write_PIDresult()
         pitch_rate_I_result             : attitude_control->_pitch_rate_I,
         pitch_rate_D_result             : attitude_control->_pitch_rate_D,
         pitch_rate_PID_result           : attitude_control->_pitch_rate_PID,
-        ESO_error                       :ADRC_ESO_autotune.ADRC_ESO_z2_error,
+        ESO_error                       :ADRCPITCH.after_filt_signal,
  
         
     };

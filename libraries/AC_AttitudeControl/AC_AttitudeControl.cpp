@@ -1039,6 +1039,9 @@ float AC_AttitudeControl::rate_target_to_motor_pitch(float rate_actual_rads, flo
     get_rate_pitch_pid().set_input_filter_d(rate_error_rads);
     get_rate_pitch_pid().set_desired_rate(rate_target_rads);
 
+    // filt actual rads
+    //ADRC_filter(&ADRCPITCH, rate_actual_rads);
+
     float integrator = get_rate_pitch_pid().get_integrator();
 
     // Ensure that integrator can only be reduced if the output is saturated
