@@ -1106,14 +1106,42 @@ public:
     virtual bool init(bool ignore_checks) override;
     virtual void run() override;
 
+//////////////////////////////////////////////////////////////////////
+    // for ADRC autotune function
+    void reset_ADRC_test();             // reset ADRC autotune para
+    void disturbance_switch(bool flag); // turn on/off disturbance
+    void record_final_result(float target_velocity, float actual_disturbance);         // record final result of error z1 z2
+    void fitness_function_1(float target_velocity); // fitness function 1 for z1
+    void fitness_function_2(float actual_disturbance); // fitness function 2 for z2
+
+    uint32_t autotune_start_time;           // autotune start time
+    uint32_t dis_start_time;                // start time of disturbance start time
+    uint32_t raise_time; 
+    uint32_t peak_time;
+    uint32_t disturbance_raise_time;
+    uint32_t disturbance_peak_time;
+
+    bool override_body_rate_flage = false ; // override rate control so we can test ESO.z1 and ESO.z2
+    bool time_record_flag_1 ;
+    bool time_record_flag_2 ;
+    bool raise_time_flag ;
+    bool disturbance_raise_time_flag ;
+
+    float temp_z1 ;
+    float temp_z2 ;
+    float overshoot;
+    float total_steady_state_error;
+    float total_disturbance_steady_state_error;
+    float target_velocity;
+    float actual_disturbance;
+    
+
+//////////////////////////////////////////////////////////////////////
+
     bool requires_GPS() const override { return false; }
     bool has_manual_throttle() const override { return true; }
     bool allows_arming(bool from_gcs) const override { return true; };
     bool is_autopilot() const override { return false; }
-
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    uint32_t dis_start_time;                       // start time of current tuning step (used for timeout checks)
-    bool time_record_flag ;
 
 protected:
 
