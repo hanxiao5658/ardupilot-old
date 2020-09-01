@@ -88,7 +88,7 @@ void Copter::ModeStabilize::run()
     // 2*0.5 second : return to level
          
     
-    if (roll_dis_radio_in > 1700 && ADRC_ESO_autotune.b0 < 200.0) // ch13 bigger than 1700 then start call disturbance
+    if (roll_dis_radio_in > 1700 && ADRC_ESO_autotune.b0 < 2000.0) // ch13 bigger than 1700 then start call disturbance
     {   
                   
         // step 1 : 1st second : override body rate control, call a 90 deg/s rate control to test z1
@@ -104,7 +104,7 @@ void Copter::ModeStabilize::run()
                 override_body_rate_flage = true;
 
                 // call a 90 deg/s rate control 
-                attitude_control->rate_bf_pitch_target(4500.0);  
+                attitude_control->rate_bf_pitch_target(-3000.0);  
 
             }
             
@@ -154,16 +154,6 @@ void Copter::ModeStabilize::run()
                 record_final_result(target_velocity, actual_disturbance);           
             }
         }
-        /*
-        if (millis() < autotune_start_time + 4000.0)
-        {
-            // step 2 calulate error 
-            //error of z1 and real vel
-            ADRC_ESO_autotune.ADRC_ESO_error1 += fabsf( ADRC_ESO_autotune.z1 - ADRCPITCH.actual_velocity ) ;
-            //error of z2 and real dis
-            ADRC_ESO_autotune.ADRC_ESO_error2 += fabsf( (-ADRC_ESO_autotune.z2/ADRC_ESO_autotune.b0) - attitude_control->pitch_disturbance ) ;
-        }
-        */
 
         // over 3 second reset flag and update ADRC.parameter
         if (millis() > autotune_start_time + 3000.0)        // now > 3.0 
@@ -171,7 +161,15 @@ void Copter::ModeStabilize::run()
             reset_ADRC_test(); // reset test ESO
 
             // step 3 update b0 and set msg to gcs
-            attitude_control->_adrc_t_b0 += 10.0 ;  
+            if (attitude_control->_adrc_t_b0 < 200)
+            {
+                attitude_control->_adrc_t_b0 += 10.0 ; 
+            }
+            else
+            {
+                attitude_control->_adrc_t_b0 += 100.0 ;
+            }
+              
             gcs().send_text(MAV_SEVERITY_INFO, "b0:%f  w0:%f", ADRC_ESO_autotune.b0,ADRC_ESO_autotune.w0);
 
         }
@@ -194,10 +192,12 @@ void Copter::ModeStabilize::run()
 void Copter::ModeStabilize::reset_ADRC_test()
 {
     // reset test ESO
-    ADRC_ESO_autotune.z1 = 0.0;
-    ADRC_ESO_autotune.z2 = 0.0;
+    //ADRC_ESO_autotune.z1 = 0.0;
+    //ADRC_ESO_autotune.z2 = 0.0;
     ADRC_ESO_autotune.ADRC_ESO_error1 = 0.0;
     ADRC_ESO_autotune.ADRC_ESO_error2 = 0.0;
+    total_disturbance_steady_state_error = 0;
+    total_steady_state_error = 0;
     temp_z1 = 0.0;
     temp_z2 = 0.0;
     raise_time_flag = true ; 
@@ -234,8 +234,10 @@ void Copter::ModeStabilize::fitness_function_1(float target_velocity_temp)
             raise_time =  millis() - autotune_start_time; // TODO need to be logged
             raise_time_flag = false ;
         }
-        total_steady_state_error += fabsf( ADRC_ESO_autotune.z1 - ADRCPITCH.actual_velocity );   
+          
     }
+
+    total_steady_state_error += fabsf( ADRC_ESO_autotune.z1 - ADRCPITCH.actual_velocity ); 
 
     // calculate max z1 to calculate overshoot
     if (ADRC_ESO_autotune.z1 > temp_z1)
@@ -261,9 +263,11 @@ void Copter::ModeStabilize::fitness_function_2(float actual_disturbance_temp)
             disturbance_raise_time =  millis() - dis_start_time; // TODO need to be logged
             disturbance_raise_time_flag = false ;
         }
-        total_disturbance_steady_state_error += fabsf( ESO_disturbance - actual_disturbance_temp );   
+          
     }
 
+    total_disturbance_steady_state_error += fabsf( ESO_disturbance - actual_disturbance_temp ); 
+    
     // calculate max disturbance to calculate overshoot
     if (ESO_disturbance > temp_z2)
     {

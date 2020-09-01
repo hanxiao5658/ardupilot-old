@@ -615,7 +615,7 @@ void Copter::Log_Write_disturbance_result()
  struct log_disturbance_flag pkt = {
         LOG_PACKET_HEADER_INIT(LOG_disturbance_flag_MSG),
         time_us                     : AP_HAL::micros64(),
-        roll_disturbance_flag       : attitude_control->roll_disturbance_flag,
+        roll_disturbance_flag       : ADRC_ESO_autotune.ADRC_ESO_z1_error + ADRC_ESO_autotune.ADRC_ESO_z2_error,
         roll_disturbance            : attitude_control->roll_disturbance,
         roll_test_z1                : ADRC_ESO_autotune.z1,
         roll_test_z2                : -(ADRC_ESO_autotune.z2/ADRC_ESO_autotune.b0),
@@ -801,7 +801,7 @@ const struct LogStructure Copter::log_structure[] = {
       "PID2",   "Qfffffffff",   "TimeUS,r_P,r_I,r_D,r_PID,p_P,p_I,p_D,p_PID,ESO_e", "s---------", "F---------", },
 
     { LOG_disturbance_flag_MSG, sizeof(log_disturbance_flag),
-      "ATUN",   "Qffffffffff",   "TimeUS,r_f,r_dis,r_t_z1,r_t_z2,p_f,p_dis,p_t_z1,p_t_z2,e1,e2", "s----------", "F----------", },
+      "ATUN",   "Qffffffffff",   "TimeUS,T_E,r_dis,r_t_z1,r_t_z2,p_f,p_dis,p_t_z1,p_t_z2,e1,e2", "s----------", "F----------", },
 
 ////////////////////////////////////////////////////////////////////////////////////
 
