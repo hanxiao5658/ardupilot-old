@@ -1111,8 +1111,9 @@ public:
     void reset_ADRC_test();             // reset ADRC autotune para
     void disturbance_switch(bool flag); // turn on/off disturbance
     void record_final_result(float target_velocity, float actual_disturbance);         // record final result of error z1 z2
-    void fitness_function_1(float target_velocity); // fitness function 1 for z1
+    void fitness_function_1(); // fitness function 1 for z1
     void fitness_function_2(float actual_disturbance); // fitness function 2 for z2
+    void update_parameter(); // update ADRC parameters 
 
     uint32_t autotune_start_time;           // autotune start time
     uint32_t dis_start_time;                // start time of disturbance start time
@@ -1127,9 +1128,10 @@ public:
     bool raise_time_flag ;
     bool disturbance_raise_time_flag ;
 
-    float temp_z1 ;
+    float max_ESO_z1 ;
+    float real_vel ;
     float temp_z2 ;
-    float overshoot;
+    float overshoot_z1;
     float total_steady_state_error;
     float total_disturbance_steady_state_error;
     float target_velocity;

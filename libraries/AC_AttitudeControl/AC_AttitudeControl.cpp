@@ -10,7 +10,11 @@ extern Fhan_Data ADRCROLL;
 extern Fhan_Data ADRCPITCH;
 extern Fhan_Data ADRCYAW;
 extern Fhan_Data ADRCdata;
-extern Fhan_Data ADRC_ESO_autotune;
+extern Fhan_Data ADRC_ESO_autotune1;
+extern Fhan_Data ADRC_ESO_autotune2;
+extern Fhan_Data ADRC_ESO_autotune3;
+extern Fhan_Data ADRC_ESO_autotune4;
+extern Fhan_Data ADRC_ESO_autotune5;
 //int a=0;
 
 //ofstream angularfile("angulardata.txt"); //创建angulardata
@@ -1095,12 +1099,29 @@ float AC_AttitudeControl::rate_target_to_motor_pitch(float rate_actual_rads, flo
     output = ADRCPITCH.ADRC_final_signal ;
 */  
 ////////////////////////////////////////////////////////////////////////////////////////////////
-    //set ADRC_test parameter
-    ADRC_ESO_autotune.b0 = _adrc_t_b0;
-    ADRC_ESO_autotune.w0 = _adrc_t_w0;
+    //set ADRC_test parameter 
+    //autotune1 is base , 2 3 4 5 use same b0 and different w0 
+    ADRC_ESO_autotune1.w0 = _adrc_t_w0; // start 10
+    ADRC_ESO_autotune1.b0 = _adrc_t_b0;
 
+    // w0 is less so we set this 
+    // 2 3 4 5 use different w0
+    ADRC_ESO_autotune2.w0 = _adrc_t_w0 + 20.0; // 30
+    ADRC_ESO_autotune3.w0 = _adrc_t_w0 + 40.0; // 50
+    ADRC_ESO_autotune4.w0 = _adrc_t_w0 + 60.0; // 70
+    ADRC_ESO_autotune5.w0 = _adrc_t_w0 + 80.0; // 90
+
+    // 2 3 4 5 use same b0
+    ADRC_ESO_autotune2.b0 = _adrc_t_b0;
+    ADRC_ESO_autotune3.b0 = _adrc_t_b0;
+    ADRC_ESO_autotune4.b0 = _adrc_t_b0;
+    ADRC_ESO_autotune5.b0 = _adrc_t_b0;
     // call eso autotune , input is final control signal (output) and actual rate , result is z2/b0 
-    ESO(&ADRC_ESO_autotune , output ,rate_actual_rads, ADRCPITCH.w0);
+    ESO(&ADRC_ESO_autotune1 , output ,rate_actual_rads, ADRC_ESO_autotune1.w0);
+    ESO(&ADRC_ESO_autotune2 , output ,rate_actual_rads, ADRC_ESO_autotune2.w0);
+    ESO(&ADRC_ESO_autotune3 , output ,rate_actual_rads, ADRC_ESO_autotune3.w0);
+    ESO(&ADRC_ESO_autotune4 , output ,rate_actual_rads, ADRC_ESO_autotune4.w0);
+    ESO(&ADRC_ESO_autotune5 , output ,rate_actual_rads, ADRC_ESO_autotune5.w0);
     
     //use ch14 to simulate disturbance by reduce 0.3 of output
     uint16_t pitch_dis_radio_in = (disturbance_ch >= 7) ? RC_Channels::rc_channel(disturbance_ch - 1)->get_radio_in() : 0;

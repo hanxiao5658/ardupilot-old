@@ -46,11 +46,28 @@ float actual_velocity = 0;
 float target_velocity = 0;
 float _i=0;
 int ADRC_flag = 0 ;
+
 float ADRC_ESO_error1 = 0.0;
 float ADRC_ESO_error2 = 0.0;
 float ADRC_ESO_z1_error = 0.0;
 float ADRC_ESO_z2_error = 0.0;
 float after_filt_signal = 0.0;
+float total_error = 0.0;
+
+float total_steady_state_error = 0.0;
+float total_disturbance_steady_state_error = 0.0;
+float raise_time =0.0 ;
+float disturbance_raise_time = 0.0;
+float peak_time = 0.0 ;
+float disturbance_peak_time = 0.0;
+float overshoot_z1 = 0.0 ;
+float overshoot_z2 = 0.0 ;
+float max_ESO_z1 = 0.0;
+float max_ESO_z2 = 0.0;
+
+
+bool raise_time_flag ;
+bool disturbance_raise_time_flag ;
 
 
 

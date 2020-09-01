@@ -8,7 +8,11 @@ extern POS_Fhan_Data ADRC_POS_Z;
 extern Fhan_Data ADRCROLL;
 extern Fhan_Data ADRCPITCH;
 extern Fhan_Data ADRCYAW;
-extern Fhan_Data ADRC_ESO_autotune;
+extern Fhan_Data ADRC_ESO_autotune1;
+extern Fhan_Data ADRC_ESO_autotune2;
+extern Fhan_Data ADRC_ESO_autotune3;
+extern Fhan_Data ADRC_ESO_autotune4;
+extern Fhan_Data ADRC_ESO_autotune5;
 // Code to Write and Read packets from DataFlash log memory
 // Code to interact with the user to dump or erase logs
 
@@ -534,7 +538,8 @@ struct PACKED log_ADRCpara {
     float pitch_rate_b1;
     float pitch_rate_b2;
     float pitch_rate_b0;
-    float test_b0 ;
+    float test1_b0 ;
+    float test1_w0 ;
 
 };
 
@@ -549,7 +554,8 @@ void Copter::Log_Write_ADRCpara()
         pitch_rate_b1             : ADRCPITCH.beta_1,
         pitch_rate_b2             : ADRCPITCH.beta_2,
         pitch_rate_b0            : ADRCPITCH.b0,
-        test_b0                  : ADRC_ESO_autotune.b0,
+        test1_b0                  : ADRC_ESO_autotune1.b0,
+        test1_w0                  : ADRC_ESO_autotune1.w0,
         
     };
     DataFlash.WriteBlock(&pkt, sizeof(pkt));
@@ -596,17 +602,20 @@ void Copter::Log_Write_PIDresult()
 struct PACKED log_disturbance_flag {
     LOG_PACKET_HEADER;
     uint64_t time_us;
-    float roll_disturbance_flag;
-    float roll_disturbance;
-    float roll_test_z1 ;
-    float roll_test_z2 ; 
+
     float pitch_disturbance_flag;
     float pitch_disturbance;
-    float pitch_test_z1 ;
-    float pitch_test_z2 ;
-    float ESO_error1 ;
-    float ESO_error2 ;
-    
+    float test1_z1 ;
+    float test1_z2 ;
+    float ESO_1_error1 ;
+    float ESO_1_error2 ;
+    float ESO_1_TE ;
+
+    float test2_z1 ;
+    float test2_z2 ;
+    float ESO_2_error1 ;
+    float ESO_2_error2 ;
+    float ESO_2_TE ;
 
 };
 
@@ -615,17 +624,93 @@ void Copter::Log_Write_disturbance_result()
  struct log_disturbance_flag pkt = {
         LOG_PACKET_HEADER_INIT(LOG_disturbance_flag_MSG),
         time_us                     : AP_HAL::micros64(),
-        roll_disturbance_flag       : ADRC_ESO_autotune.ADRC_ESO_z1_error + ADRC_ESO_autotune.ADRC_ESO_z2_error,
-        roll_disturbance            : attitude_control->roll_disturbance,
-        roll_test_z1                : ADRC_ESO_autotune.z1,
-        roll_test_z2                : -(ADRC_ESO_autotune.z2/ADRC_ESO_autotune.b0),
+
         pitch_disturbance_flag      : attitude_control->pitch_disturbance_flag,
         pitch_disturbance           : attitude_control->pitch_disturbance,
-        pitch_test_z1               : ADRC_ESO_autotune.z1,
-        pitch_test_z2               : -(ADRC_ESO_autotune.z2/ADRC_ESO_autotune.b0),  
-        ESO_error1                       :ADRC_ESO_autotune.ADRC_ESO_z1_error, 
-        ESO_error2                       :ADRC_ESO_autotune.ADRC_ESO_z2_error,
-        
+
+        test1_z1               : ADRC_ESO_autotune1.z1,
+        test1_z2               : -(ADRC_ESO_autotune1.z2/ADRC_ESO_autotune1.b0),  
+        ESO_1_error1                       :ADRC_ESO_autotune1.ADRC_ESO_z1_error, 
+        ESO_1_error2                       :ADRC_ESO_autotune1.ADRC_ESO_z2_error,
+        ESO_1_TE                       :ADRC_ESO_autotune1.ADRC_ESO_z1_error + ADRC_ESO_autotune1.ADRC_ESO_z2_error,
+
+        test2_z1               : ADRC_ESO_autotune2.z1,
+        test2_z2               : -(ADRC_ESO_autotune2.z2/ADRC_ESO_autotune2.b0),  
+        ESO_2_error1                       :ADRC_ESO_autotune2.ADRC_ESO_z1_error, 
+        ESO_2_error2                       :ADRC_ESO_autotune2.ADRC_ESO_z2_error,
+        ESO_2_TE                       :ADRC_ESO_autotune2.ADRC_ESO_z1_error + ADRC_ESO_autotune2.ADRC_ESO_z2_error,
+    };
+    DataFlash.WriteBlock(&pkt, sizeof(pkt));
+}
+
+// disturbance log 2
+struct PACKED log_disturbance_flag2 {
+    LOG_PACKET_HEADER;
+    uint64_t time_us;
+
+    float test3_z1;
+    float test3_z2;
+    float ESO_3_error1 ;
+    float ESO_3_error2 ;
+    float ESO_3_TE ;
+
+    float test4_z1;
+    float test4_z2;
+    float ESO_4_error1 ;
+    float ESO_4_error2 ;
+    float ESO_4_TE ;
+
+
+
+};
+
+void Copter::Log_Write_disturbance_result2()
+{
+ struct log_disturbance_flag2 pkt = {
+        LOG_PACKET_HEADER_INIT(LOG_disturbance_flag_MSG2),
+        time_us                     : AP_HAL::micros64(),
+
+        test3_z1               : ADRC_ESO_autotune3.z1,
+        test3_z2               : -(ADRC_ESO_autotune3.z2/ADRC_ESO_autotune3.b0),  
+        ESO_3_error1                       :ADRC_ESO_autotune3.ADRC_ESO_z1_error, 
+        ESO_3_error2                       :ADRC_ESO_autotune3.ADRC_ESO_z2_error,
+        ESO_3_TE                       :ADRC_ESO_autotune3.ADRC_ESO_z1_error + ADRC_ESO_autotune3.ADRC_ESO_z2_error,
+
+        test4_z1               : ADRC_ESO_autotune4.z1,
+        test4_z2               : -(ADRC_ESO_autotune4.z2/ADRC_ESO_autotune4.b0),  
+        ESO_4_error1                       :ADRC_ESO_autotune4.ADRC_ESO_z1_error, 
+        ESO_4_error2                       :ADRC_ESO_autotune4.ADRC_ESO_z2_error,
+        ESO_4_TE                       :ADRC_ESO_autotune4.ADRC_ESO_z1_error + ADRC_ESO_autotune4.ADRC_ESO_z2_error,
+
+
+    };
+    DataFlash.WriteBlock(&pkt, sizeof(pkt));
+}
+
+// disturbance log 3
+struct PACKED log_disturbance_flag3 {
+    LOG_PACKET_HEADER;
+    uint64_t time_us;
+
+    float test5_z1;
+    float test5_z2;
+    float ESO_5_error1 ;
+    float ESO_5_error2 ;
+    float ESO_5_TE ;
+
+};
+
+void Copter::Log_Write_disturbance_result3()
+{
+ struct log_disturbance_flag3 pkt = {
+        LOG_PACKET_HEADER_INIT(LOG_disturbance_flag_MSG3),
+        time_us                     : AP_HAL::micros64(),
+
+        test5_z1               : ADRC_ESO_autotune5.z1,
+        test5_z2               : -(ADRC_ESO_autotune5.z2/ADRC_ESO_autotune5.b0),  
+        ESO_5_error1                       :ADRC_ESO_autotune5.ADRC_ESO_z1_error, 
+        ESO_5_error2                       :ADRC_ESO_autotune5.ADRC_ESO_z2_error,
+        ESO_5_TE                       :ADRC_ESO_autotune5.ADRC_ESO_z1_error + ADRC_ESO_autotune5.ADRC_ESO_z2_error,
     };
     DataFlash.WriteBlock(&pkt, sizeof(pkt));
 }
@@ -795,14 +880,20 @@ const struct LogStructure Copter::log_structure[] = {
       "ATD",   "Qffffffffff",   "TimeUS,r_tr,r_ar,r_t,r_v1,r_v2,p_tr,p_ar,p_t,p_v1,p_v2", "s----------", "F----------" },
 
     { LOG_ADRC_para_MSG, sizeof(log_ADRCpara),
-      "APAR",   "Qfffffff",   "TimeUS,r_b1,r_b2,r_b0,p_b1,p_b2,p_b0,t_b0", "s-------", "F-------" },
+      "APAR",   "Qffffffff",   "TimeUS,r_b1,r_b2,r_b0,p_b1,p_b2,p_b0,t_b0,t_w0", "s--------", "F--------" },
 
     { LOG_PID_result_MSG, sizeof(log_PIDresult),
       "PID2",   "Qfffffffff",   "TimeUS,r_P,r_I,r_D,r_PID,p_P,p_I,p_D,p_PID,ESO_e", "s---------", "F---------", },
 
     { LOG_disturbance_flag_MSG, sizeof(log_disturbance_flag),
-      "ATUN",   "Qffffffffff",   "TimeUS,T_E,r_dis,r_t_z1,r_t_z2,p_f,p_dis,p_t_z1,p_t_z2,e1,e2", "s----------", "F----------", },
+      "ATUN",   "Qffffffffffff",   "TimeUS,PDF,PD,t1_z1,t1_z2,e11,e12,e1T,t2_z1,t2_z2,e21,e22,e2T", "s------------", "F------------", },
 
+    { LOG_disturbance_flag_MSG2, sizeof(log_disturbance_flag2),
+      "ATu2",   "Qffffffffff",   "TimeUS,t3_z1,t3_z2,e31,e32,e3T,t4_z1,t4_z2,e41,e42,e4T", "s----------", "F----------", },
+    
+    { LOG_disturbance_flag_MSG3, sizeof(log_disturbance_flag3),
+      "ATu3",   "Qfffff",   "TimeUS,t5_z1,t5_z2,e51,e52,e5T", "s-----", "F-----", },
+    
 ////////////////////////////////////////////////////////////////////////////////////
 
 #if FRAME_CONFIG == HELI_FRAME

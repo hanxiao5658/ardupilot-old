@@ -1,9 +1,14 @@
 #include "Copter.h"
 
+
 extern Fhan_Data ADRCROLL;
 extern Fhan_Data ADRCPITCH;
 extern Fhan_Data ADRCYAW;
-extern Fhan_Data ADRC_ESO_autotune;
+extern Fhan_Data ADRC_ESO_autotune1;
+extern Fhan_Data ADRC_ESO_autotune2;
+extern Fhan_Data ADRC_ESO_autotune3;
+extern Fhan_Data ADRC_ESO_autotune4;
+extern Fhan_Data ADRC_ESO_autotune5;
 
 /*
  * Init and run calls for stabilize flight mode
@@ -23,11 +28,11 @@ bool Copter::ModeStabilize::init(bool ignore_checks)
     time_record_flag_1 = true;
     time_record_flag_2 = true;
     override_body_rate_flage = false;
-    raise_time_flag = true ; 
-    disturbance_raise_time_flag = true ;
-    temp_z1 = 0;
+    ADRC_ESO_autotune1.raise_time_flag = true ; 
+    ADRC_ESO_autotune1.disturbance_raise_time_flag = true ;
+    ADRC_ESO_autotune1.max_ESO_z1 = 0;
+    ADRC_ESO_autotune1.b0 = attitude_control->_adrc_t_b0; 
 
-    ADRC_ESO_autotune.b0 = attitude_control->_adrc_t_b0; 
 
     return true;
 }
@@ -88,7 +93,7 @@ void Copter::ModeStabilize::run()
     // 2*0.5 second : return to level
          
     
-    if (roll_dis_radio_in > 1700 && ADRC_ESO_autotune.b0 < 2000.0) // ch13 bigger than 1700 then start call disturbance
+    if (roll_dis_radio_in > 1700 && ADRC_ESO_autotune1.b0 < 2000.0) // ch13 bigger than 1700 then start call disturbance
     {   
                   
         // step 1 : 1st second : override body rate control, call a 90 deg/s rate control to test z1
@@ -112,7 +117,7 @@ void Copter::ModeStabilize::run()
             if ( millis() < autotune_start_time + 1000.0) //now = 0 - 1
             {   
                 // calculate error1
-                fitness_function_1(ADRCPITCH.target_velocity);
+                fitness_function_1();
                 target_velocity = ADRCPITCH.target_velocity;
             }
 
@@ -159,18 +164,8 @@ void Copter::ModeStabilize::run()
         if (millis() > autotune_start_time + 3000.0)        // now > 3.0 
         {   
             reset_ADRC_test(); // reset test ESO
-
-            // step 3 update b0 and set msg to gcs
-            if (attitude_control->_adrc_t_b0 < 200)
-            {
-                attitude_control->_adrc_t_b0 += 10.0 ; 
-            }
-            else
-            {
-                attitude_control->_adrc_t_b0 += 100.0 ;
-            }
-              
-            gcs().send_text(MAV_SEVERITY_INFO, "b0:%f  w0:%f", ADRC_ESO_autotune.b0,ADRC_ESO_autotune.w0);
+            update_parameter(); // update parameters 
+            gcs().send_text(MAV_SEVERITY_INFO, "b0:%f  w0:%f", ADRC_ESO_autotune1.b0,ADRC_ESO_autotune1.w0);
 
         }
           
@@ -191,17 +186,63 @@ void Copter::ModeStabilize::run()
 // reset ADRC
 void Copter::ModeStabilize::reset_ADRC_test()
 {
-    // reset test ESO
-    //ADRC_ESO_autotune.z1 = 0.0;
-    //ADRC_ESO_autotune.z2 = 0.0;
-    ADRC_ESO_autotune.ADRC_ESO_error1 = 0.0;
-    ADRC_ESO_autotune.ADRC_ESO_error2 = 0.0;
-    total_disturbance_steady_state_error = 0;
-    total_steady_state_error = 0;
-    temp_z1 = 0.0;
-    temp_z2 = 0.0;
-    raise_time_flag = true ; 
-    disturbance_raise_time_flag = true ;
+        // reset test ESO
+    {
+        ADRC_ESO_autotune1.z1 = 0.0;
+        ADRC_ESO_autotune1.z2 = 0.0;
+        ADRC_ESO_autotune1.ADRC_ESO_error1 = 0.0;
+        ADRC_ESO_autotune1.ADRC_ESO_error2 = 0.0;
+        ADRC_ESO_autotune1.total_disturbance_steady_state_error = 0;
+        ADRC_ESO_autotune1.total_steady_state_error = 0;
+        ADRC_ESO_autotune1.max_ESO_z1 = 0.0;
+        ADRC_ESO_autotune1.max_ESO_z2 = 0.0;
+        ADRC_ESO_autotune1.raise_time_flag = true ; 
+        ADRC_ESO_autotune1.disturbance_raise_time_flag = true ;
+
+        ADRC_ESO_autotune2.z1 = 0.0;
+        ADRC_ESO_autotune2.z2 = 0.0;
+        ADRC_ESO_autotune2.ADRC_ESO_error1 = 0.0;
+        ADRC_ESO_autotune2.ADRC_ESO_error2 = 0.0;
+        ADRC_ESO_autotune2.total_disturbance_steady_state_error = 0;
+        ADRC_ESO_autotune2.total_steady_state_error = 0;
+        ADRC_ESO_autotune2.max_ESO_z1 = 0.0;
+        ADRC_ESO_autotune2.max_ESO_z2 = 0.0;
+        ADRC_ESO_autotune2.raise_time_flag = true ; 
+        ADRC_ESO_autotune2.disturbance_raise_time_flag = true ;
+
+        ADRC_ESO_autotune3.z1 = 0.0;
+        ADRC_ESO_autotune3.z2 = 0.0;
+        ADRC_ESO_autotune3.ADRC_ESO_error1 = 0.0;
+        ADRC_ESO_autotune3.ADRC_ESO_error2 = 0.0;
+        ADRC_ESO_autotune3.total_disturbance_steady_state_error = 0;
+        ADRC_ESO_autotune3.total_steady_state_error = 0;
+        ADRC_ESO_autotune3.max_ESO_z1 = 0.0;
+        ADRC_ESO_autotune3.max_ESO_z2 = 0.0;
+        ADRC_ESO_autotune3.raise_time_flag = true ; 
+        ADRC_ESO_autotune3.disturbance_raise_time_flag = true ;
+
+        ADRC_ESO_autotune4.z1 = 0.0;
+        ADRC_ESO_autotune4.z2 = 0.0;
+        ADRC_ESO_autotune4.ADRC_ESO_error1 = 0.0;
+        ADRC_ESO_autotune4.ADRC_ESO_error2 = 0.0;
+        ADRC_ESO_autotune4.total_disturbance_steady_state_error = 0;
+        ADRC_ESO_autotune4.total_steady_state_error = 0;
+        ADRC_ESO_autotune4.max_ESO_z1 = 0.0;
+        ADRC_ESO_autotune4.max_ESO_z2 = 0.0;
+        ADRC_ESO_autotune4.raise_time_flag = true ; 
+        ADRC_ESO_autotune4.disturbance_raise_time_flag = true ;
+
+        ADRC_ESO_autotune5.z1 = 0.0;
+        ADRC_ESO_autotune5.z2 = 0.0;
+        ADRC_ESO_autotune5.ADRC_ESO_error1 = 0.0;
+        ADRC_ESO_autotune5.ADRC_ESO_error2 = 0.0;
+        ADRC_ESO_autotune5.total_disturbance_steady_state_error = 0;
+        ADRC_ESO_autotune5.total_steady_state_error = 0;
+        ADRC_ESO_autotune5.max_ESO_z1 = 0.0;
+        ADRC_ESO_autotune5.max_ESO_z2 = 0.0;
+        ADRC_ESO_autotune5.raise_time_flag = true ; 
+        ADRC_ESO_autotune5.disturbance_raise_time_flag = true ;
+    }
     // reset time record flag
     time_record_flag_1 = true; 
     time_record_flag_2 = true;
@@ -221,59 +262,297 @@ void Copter::ModeStabilize::disturbance_switch(bool flag)
 }
 
 // fitness function 1 for z1
-void Copter::ModeStabilize::fitness_function_1(float target_velocity_temp)
+void Copter::ModeStabilize::fitness_function_1()
 {
     // fitness function for z1, use actual velocity
     // we need calculate raise time, overshoot, steady state error, peak time
 
-    if ( ADRC_ESO_autotune.z1 > 0.9 * target_velocity_temp)
-    {   
-        // calculate raise time
-        if (raise_time_flag)
-        {
-            raise_time =  millis() - autotune_start_time; // TODO need to be logged
-            raise_time_flag = false ;
+    //test1
+    {
+        if ( ADRC_ESO_autotune1.z1 > 0.9 * ADRCPITCH.actual_velocity)
+        {   
+            // calculate raise time
+            if (ADRC_ESO_autotune1.raise_time_flag)
+            {
+                ADRC_ESO_autotune1.raise_time =  millis() - autotune_start_time; // TODO need to be logged
+                ADRC_ESO_autotune1.raise_time_flag = false ;
+            }
+            
         }
+
+        ADRC_ESO_autotune1.total_steady_state_error += fabsf( ADRC_ESO_autotune1.z1 - ADRCPITCH.actual_velocity ); 
+
+        // calculate max z1 to calculate overshoot
+        if (ADRC_ESO_autotune1.z1 > ADRC_ESO_autotune1.max_ESO_z1)
+        {
+            ADRC_ESO_autotune1.max_ESO_z1 = ADRC_ESO_autotune1.z1;  
+
+            // when ESO.z1 get max record real vel to calculat overshot
+            real_vel = ADRCPITCH.actual_velocity;
+
+            // cal overshoot
+            ADRC_ESO_autotune1.overshoot_z1 = fabsf(ADRC_ESO_autotune1.max_ESO_z1 - real_vel) / fabsf(real_vel);
+            ADRC_ESO_autotune1.peak_time = millis() - autotune_start_time;     
+        }  
+
           
     }
 
-    total_steady_state_error += fabsf( ADRC_ESO_autotune.z1 - ADRCPITCH.actual_velocity ); 
-
-    // calculate max z1 to calculate overshoot
-    if (ADRC_ESO_autotune.z1 > temp_z1)
+        //test2
     {
-        temp_z1 = ADRC_ESO_autotune.z1;   
-        peak_time = millis() - autotune_start_time;     
-    }    
+        if ( ADRC_ESO_autotune2.z1 > 0.9 * ADRCPITCH.actual_velocity)
+        {   
+            // calculate raise time
+            if (ADRC_ESO_autotune2.raise_time_flag)
+            {
+                ADRC_ESO_autotune2.raise_time =  millis() - autotune_start_time; // TODO need to be logged
+                ADRC_ESO_autotune2.raise_time_flag = false ;
+            }
+            
+        }
+
+        ADRC_ESO_autotune2.total_steady_state_error += fabsf( ADRC_ESO_autotune2.z1 - ADRCPITCH.actual_velocity ); 
+
+        // calculate max z1 to calculate overshoot
+        if (ADRC_ESO_autotune2.z1 > ADRC_ESO_autotune2.max_ESO_z1)
+        {
+            ADRC_ESO_autotune2.max_ESO_z1 = ADRC_ESO_autotune2.z1;  
+
+            // when ESO.z1 get max record real vel to calculat overshot
+            real_vel = ADRCPITCH.actual_velocity;
+
+            // cal overshoot
+            ADRC_ESO_autotune2.overshoot_z1 = fabsf(ADRC_ESO_autotune2.max_ESO_z1 - real_vel) / fabsf(real_vel);
+            ADRC_ESO_autotune2.peak_time = millis() - autotune_start_time;     
+        }    
+    }
+
+        //test3
+    {
+        if ( ADRC_ESO_autotune3.z1 > 0.9 * ADRCPITCH.actual_velocity)
+        {   
+            // calculate raise time
+            if (ADRC_ESO_autotune3.raise_time_flag)
+            {
+                ADRC_ESO_autotune3.raise_time =  millis() - autotune_start_time; // TODO need to be logged
+                ADRC_ESO_autotune3.raise_time_flag = false ;
+            }
+            
+        }
+
+        ADRC_ESO_autotune3.total_steady_state_error += fabsf( ADRC_ESO_autotune3.z1 - ADRCPITCH.actual_velocity ); 
+
+        // calculate max z1 to calculate overshoot
+        if (ADRC_ESO_autotune3.z1 > ADRC_ESO_autotune1.max_ESO_z1)
+        {
+            ADRC_ESO_autotune3.max_ESO_z1 = ADRC_ESO_autotune3.z1;  
+
+            // when ESO.z1 get max record real vel to calculat overshot
+            real_vel = ADRCPITCH.actual_velocity;
+
+            // cal overshoot
+            ADRC_ESO_autotune3.overshoot_z1 = fabsf(ADRC_ESO_autotune3.max_ESO_z1 - real_vel) / fabsf(real_vel);
+            ADRC_ESO_autotune3.peak_time = millis() - autotune_start_time;     
+        }    
+    }
+
+        //test4
+    {
+        if ( ADRC_ESO_autotune4.z1 > 0.9 * ADRCPITCH.actual_velocity)
+        {   
+            // calculate raise time
+            if (ADRC_ESO_autotune4.raise_time_flag)
+            {
+                ADRC_ESO_autotune4.raise_time =  millis() - autotune_start_time; // TODO need to be logged
+                ADRC_ESO_autotune4.raise_time_flag = false ;
+            }
+            
+        }
+
+        ADRC_ESO_autotune4.total_steady_state_error += fabsf( ADRC_ESO_autotune4.z1 - ADRCPITCH.actual_velocity ); 
+
+        // calculate max z1 to calculate overshoot
+        if (ADRC_ESO_autotune4.z1 > ADRC_ESO_autotune1.max_ESO_z1)
+        {
+            ADRC_ESO_autotune4.max_ESO_z1 = ADRC_ESO_autotune4.z1;  
+
+            // when ESO.z1 get max record real vel to calculat overshot
+            real_vel = ADRCPITCH.actual_velocity;
+
+            // cal overshoot
+            ADRC_ESO_autotune4.overshoot_z1 = fabsf(ADRC_ESO_autotune4.max_ESO_z1 - real_vel) / fabsf(real_vel);
+            ADRC_ESO_autotune4.peak_time = millis() - autotune_start_time;     
+        }    
+    }
+
+        //test5
+    {
+        if ( ADRC_ESO_autotune5.z1 > 0.9 * ADRCPITCH.actual_velocity)
+        {   
+            // calculate raise time
+            if (ADRC_ESO_autotune5.raise_time_flag)
+            {
+                ADRC_ESO_autotune5.raise_time =  millis() - autotune_start_time; // TODO need to be logged
+                ADRC_ESO_autotune5.raise_time_flag = false ;
+            }
+            
+        }
+
+        ADRC_ESO_autotune5.total_steady_state_error += fabsf( ADRC_ESO_autotune5.z1 - ADRCPITCH.actual_velocity ); 
+
+        // calculate max z1 to calculate overshoot
+        if (ADRC_ESO_autotune5.z1 > ADRC_ESO_autotune1.max_ESO_z1)
+        {
+            ADRC_ESO_autotune5.max_ESO_z1 = ADRC_ESO_autotune5.z1;  
+
+            // when ESO.z1 get max record real vel to calculat overshot
+            real_vel = ADRCPITCH.actual_velocity;
+
+            // cal overshoot
+            ADRC_ESO_autotune5.overshoot_z1 = fabsf(ADRC_ESO_autotune5.max_ESO_z1 - real_vel) / fabsf(real_vel);
+            ADRC_ESO_autotune5.peak_time = millis() - autotune_start_time;     
+        }    
+    }
 
 }
 
 // fitness function 2 for z2
 void Copter::ModeStabilize::fitness_function_2(float actual_disturbance_temp)
 {
-    float ESO_disturbance = ( -( ADRC_ESO_autotune.z2 / ADRC_ESO_autotune.b0 ) );
+    float ESO_disturbance = 0.0 ;
     // fitness function for z1, use actual velocity
     // we need calculate raise time, overshoot, steady state error, peak time
+    
+    // test1
+    {
+        ESO_disturbance = ( -( ADRC_ESO_autotune1.z2 / ADRC_ESO_autotune1.b0 ) );
 
-    if ( ESO_disturbance > 0.9 * actual_disturbance_temp)
-    {   
-        // calculate raise time
-        if (disturbance_raise_time_flag)
-        {
-            disturbance_raise_time =  millis() - dis_start_time; // TODO need to be logged
-            disturbance_raise_time_flag = false ;
+        if ( ESO_disturbance > 0.9 * actual_disturbance_temp)
+        {   
+            // calculate raise time
+            if (ADRC_ESO_autotune1.disturbance_raise_time_flag)
+            {
+                ADRC_ESO_autotune1.disturbance_raise_time =  millis() - dis_start_time; // TODO need to be logged
+                ADRC_ESO_autotune1.disturbance_raise_time_flag = false ;
+            }
+            
         }
-          
+
+        ADRC_ESO_autotune1.total_disturbance_steady_state_error += fabsf( ESO_disturbance - actual_disturbance_temp ); 
+        
+        // calculate max disturbance to calculate overshoot
+        if (ESO_disturbance > ADRC_ESO_autotune1.max_ESO_z2)
+        {
+            ADRC_ESO_autotune1.max_ESO_z2 = ESO_disturbance;   
+            ADRC_ESO_autotune1.overshoot_z2 = fabsf(ADRC_ESO_autotune1.max_ESO_z2 - actual_disturbance_temp) / fabsf(actual_disturbance_temp);
+            ADRC_ESO_autotune1.disturbance_peak_time = millis() - dis_start_time;     
+        }    
     }
 
-    total_disturbance_steady_state_error += fabsf( ESO_disturbance - actual_disturbance_temp ); 
-    
-    // calculate max disturbance to calculate overshoot
-    if (ESO_disturbance > temp_z2)
+    // test2
     {
-        temp_z2 = ESO_disturbance;   
-        disturbance_peak_time = millis() - dis_start_time;     
-    }    
+        ESO_disturbance = ( -( ADRC_ESO_autotune2.z2 / ADRC_ESO_autotune2.b0 ) );
+
+        if ( ESO_disturbance > 0.9 * actual_disturbance_temp)
+        {   
+            // calculate raise time
+            if (ADRC_ESO_autotune2.disturbance_raise_time_flag)
+            {
+                ADRC_ESO_autotune2.disturbance_raise_time =  millis() - dis_start_time; // TODO need to be logged
+                ADRC_ESO_autotune2.disturbance_raise_time_flag = false ;
+            }
+            
+        }
+
+        ADRC_ESO_autotune2.total_disturbance_steady_state_error += fabsf( ESO_disturbance - actual_disturbance_temp ); 
+        
+        // calculate max disturbance to calculate overshoot
+        if (ESO_disturbance > ADRC_ESO_autotune2.max_ESO_z2)
+        {
+            ADRC_ESO_autotune2.max_ESO_z2 = ESO_disturbance;   
+            ADRC_ESO_autotune2.overshoot_z2 = fabsf(ADRC_ESO_autotune2.max_ESO_z2 - actual_disturbance_temp) / fabsf(actual_disturbance_temp);
+            ADRC_ESO_autotune2.disturbance_peak_time = millis() - dis_start_time;     
+        }    
+    }
+
+    // test3
+    {
+        ESO_disturbance = ( -( ADRC_ESO_autotune3.z2 / ADRC_ESO_autotune3.b0 ) );
+
+        if ( ESO_disturbance > 0.9 * actual_disturbance_temp)
+        {   
+            // calculate raise time
+            if (ADRC_ESO_autotune3.disturbance_raise_time_flag)
+            {
+                ADRC_ESO_autotune3.disturbance_raise_time =  millis() - dis_start_time; // TODO need to be logged
+                ADRC_ESO_autotune3.disturbance_raise_time_flag = false ;
+            }
+            
+        }
+
+        ADRC_ESO_autotune3.total_disturbance_steady_state_error += fabsf( ESO_disturbance - actual_disturbance_temp ); 
+        
+        // calculate max disturbance to calculate overshoot
+        if (ESO_disturbance > ADRC_ESO_autotune3.max_ESO_z2)
+        {
+            ADRC_ESO_autotune3.max_ESO_z2 = ESO_disturbance;   
+            ADRC_ESO_autotune3.overshoot_z2 = fabsf(ADRC_ESO_autotune3.max_ESO_z2 - actual_disturbance_temp) / fabsf(actual_disturbance_temp);
+            ADRC_ESO_autotune3.disturbance_peak_time = millis() - dis_start_time;     
+        }    
+    }
+
+    // test4
+    {
+        ESO_disturbance = ( -( ADRC_ESO_autotune4.z2 / ADRC_ESO_autotune4.b0 ) );
+
+        if ( ESO_disturbance > 0.9 * actual_disturbance_temp)
+        {   
+            // calculate raise time
+            if (ADRC_ESO_autotune4.disturbance_raise_time_flag)
+            {
+                ADRC_ESO_autotune4.disturbance_raise_time =  millis() - dis_start_time; // TODO need to be logged
+                ADRC_ESO_autotune4.disturbance_raise_time_flag = false ;
+            }
+            
+        }
+
+        ADRC_ESO_autotune4.total_disturbance_steady_state_error += fabsf( ESO_disturbance - actual_disturbance_temp ); 
+        
+        // calculate max disturbance to calculate overshoot
+        if (ESO_disturbance > ADRC_ESO_autotune4.max_ESO_z2)
+        {
+            ADRC_ESO_autotune4.max_ESO_z2 = ESO_disturbance;  
+            ADRC_ESO_autotune4.overshoot_z2 = fabsf(ADRC_ESO_autotune4.max_ESO_z2 - actual_disturbance_temp) / fabsf(actual_disturbance_temp); 
+            ADRC_ESO_autotune4.disturbance_peak_time = millis() - dis_start_time;     
+        }    
+    }
+
+    // test5
+    {
+        ESO_disturbance = ( -( ADRC_ESO_autotune5.z2 / ADRC_ESO_autotune5.b0 ) );
+
+        if ( ESO_disturbance > 0.9 * actual_disturbance_temp)
+        {   
+            // calculate raise time
+            if (ADRC_ESO_autotune5.disturbance_raise_time_flag)
+            {
+                ADRC_ESO_autotune5.disturbance_raise_time =  millis() - dis_start_time; // TODO need to be logged
+                ADRC_ESO_autotune5.disturbance_raise_time_flag = false ;
+            }
+            
+        }
+
+        ADRC_ESO_autotune5.total_disturbance_steady_state_error += fabsf( ESO_disturbance - actual_disturbance_temp ); 
+        
+        // calculate max disturbance to calculate overshoot
+        if (ESO_disturbance > ADRC_ESO_autotune5.max_ESO_z2)
+        {
+            ADRC_ESO_autotune5.max_ESO_z2 = ESO_disturbance;   
+            ADRC_ESO_autotune5.overshoot_z2 = fabsf(ADRC_ESO_autotune5.max_ESO_z2 - actual_disturbance_temp) / fabsf(actual_disturbance_temp); 
+            ADRC_ESO_autotune5.disturbance_peak_time = millis() - dis_start_time;     
+        }    
+    }
+
 
 }
 
@@ -282,7 +561,49 @@ void Copter::ModeStabilize::record_final_result(float target_velocity_temp, floa
 {
     // record final error
     // z1 : steady state error , raise time , peak time , overshoot
-    ADRC_ESO_autotune.ADRC_ESO_z1_error = total_steady_state_error + raise_time + peak_time + ( (temp_z1-target_velocity_temp) / target_velocity_temp ) ;
-    ADRC_ESO_autotune.ADRC_ESO_z2_error = total_disturbance_steady_state_error + disturbance_raise_time + disturbance_peak_time + ( (temp_z2-actual_disturbance_temp) / actual_disturbance_temp ) ;
 
+    // test 1
+    ADRC_ESO_autotune1.ADRC_ESO_z1_error = ADRC_ESO_autotune1.total_steady_state_error + ADRC_ESO_autotune1.raise_time + ADRC_ESO_autotune1.peak_time + ADRC_ESO_autotune1.overshoot_z1 ;
+    ADRC_ESO_autotune1.ADRC_ESO_z2_error = ADRC_ESO_autotune1.total_disturbance_steady_state_error + ADRC_ESO_autotune1.disturbance_raise_time + ADRC_ESO_autotune1.disturbance_peak_time + ADRC_ESO_autotune1.overshoot_z2 ;
+    ADRC_ESO_autotune1.total_error = ADRC_ESO_autotune1.ADRC_ESO_z1_error + ADRC_ESO_autotune1.ADRC_ESO_z2_error;
+
+
+
+    // test 2
+    ADRC_ESO_autotune2.ADRC_ESO_z1_error = ADRC_ESO_autotune2.total_steady_state_error + ADRC_ESO_autotune2.raise_time + ADRC_ESO_autotune2.peak_time + ADRC_ESO_autotune2.overshoot_z1 ;
+    ADRC_ESO_autotune2.ADRC_ESO_z2_error = ADRC_ESO_autotune2.total_disturbance_steady_state_error + ADRC_ESO_autotune2.disturbance_raise_time + ADRC_ESO_autotune2.disturbance_peak_time + ADRC_ESO_autotune2.overshoot_z2 ;
+    ADRC_ESO_autotune2.total_error = ADRC_ESO_autotune2.ADRC_ESO_z1_error + ADRC_ESO_autotune2.ADRC_ESO_z2_error;
+
+    // test 3
+    ADRC_ESO_autotune3.ADRC_ESO_z1_error = ADRC_ESO_autotune3.total_steady_state_error + ADRC_ESO_autotune3.raise_time + ADRC_ESO_autotune3.peak_time + ADRC_ESO_autotune3.overshoot_z1 ;
+    ADRC_ESO_autotune3.ADRC_ESO_z2_error = ADRC_ESO_autotune3.total_disturbance_steady_state_error + ADRC_ESO_autotune3.disturbance_raise_time + ADRC_ESO_autotune3.disturbance_peak_time + ADRC_ESO_autotune3.overshoot_z2 ;
+    ADRC_ESO_autotune3.total_error = ADRC_ESO_autotune3.ADRC_ESO_z1_error + ADRC_ESO_autotune3.ADRC_ESO_z2_error;
+   
+    // test 4
+    ADRC_ESO_autotune4.ADRC_ESO_z1_error = ADRC_ESO_autotune4.total_steady_state_error + ADRC_ESO_autotune4.raise_time + ADRC_ESO_autotune4.peak_time + ADRC_ESO_autotune4.overshoot_z1 ;
+    ADRC_ESO_autotune4.ADRC_ESO_z2_error = ADRC_ESO_autotune4.total_disturbance_steady_state_error + ADRC_ESO_autotune4.disturbance_raise_time + ADRC_ESO_autotune4.disturbance_peak_time + ADRC_ESO_autotune4.overshoot_z2 ;
+    ADRC_ESO_autotune4.total_error = ADRC_ESO_autotune4.ADRC_ESO_z1_error + ADRC_ESO_autotune4.ADRC_ESO_z2_error;
+   
+    // test 5
+    ADRC_ESO_autotune5.ADRC_ESO_z1_error = ADRC_ESO_autotune5.total_steady_state_error + ADRC_ESO_autotune5.raise_time + ADRC_ESO_autotune5.peak_time + ADRC_ESO_autotune5.overshoot_z1 ;
+    ADRC_ESO_autotune5.ADRC_ESO_z2_error = ADRC_ESO_autotune5.total_disturbance_steady_state_error + ADRC_ESO_autotune5.disturbance_raise_time + ADRC_ESO_autotune5.disturbance_peak_time + ADRC_ESO_autotune5.overshoot_z2 ;
+    ADRC_ESO_autotune5.total_error = ADRC_ESO_autotune5.ADRC_ESO_z1_error + ADRC_ESO_autotune5.ADRC_ESO_z2_error;
+
+
+
+
+}
+
+// update ADRC parameters 
+void Copter::ModeStabilize::update_parameter()
+{
+    // step 3 update b0 and set msg to gcs
+    if (attitude_control->_adrc_t_b0 < 200)
+    {
+        attitude_control->_adrc_t_b0 += 10.0 ; 
+    }
+    else
+    {
+        attitude_control->_adrc_t_b0 += 100.0 ;
+    }
 }

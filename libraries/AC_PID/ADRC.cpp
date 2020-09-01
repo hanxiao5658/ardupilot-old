@@ -12,8 +12,11 @@ Fhan_Data ADRCROLL;
 Fhan_Data ADRCPITCH;
 Fhan_Data ADRCYAW;
 Fhan_Data ADRCdata;
-Fhan_Data ADRC_ESO_autotune;
-
+Fhan_Data ADRC_ESO_autotune1;
+Fhan_Data ADRC_ESO_autotune2;
+Fhan_Data ADRC_ESO_autotune3;
+Fhan_Data ADRC_ESO_autotune4;
+Fhan_Data ADRC_ESO_autotune5;
 
 /*---constrain funtion make sure output is not too big or too small--------*/
 float Constrain_Float(float amt, float low, float high)
