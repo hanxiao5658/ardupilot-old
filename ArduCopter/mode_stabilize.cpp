@@ -27,11 +27,34 @@ bool Copter::ModeStabilize::init(bool ignore_checks)
     // use this to decide record time 
     time_record_flag_1 = true;
     time_record_flag_2 = true;
+    ADRC_ESO_autotune1.b0 = attitude_control->_adrc_t_b0; 
     override_body_rate_flage = false;
+
     ADRC_ESO_autotune1.raise_time_flag = true ; 
     ADRC_ESO_autotune1.disturbance_raise_time_flag = true ;
     ADRC_ESO_autotune1.max_ESO_z1 = 0;
-    ADRC_ESO_autotune1.b0 = attitude_control->_adrc_t_b0; 
+    ADRC_ESO_autotune1.max_ESO_z2 = 0;
+
+    ADRC_ESO_autotune2.raise_time_flag = true ; 
+    ADRC_ESO_autotune2.disturbance_raise_time_flag = true ;
+    ADRC_ESO_autotune2.max_ESO_z1 = 0;
+    ADRC_ESO_autotune2.max_ESO_z2 = 0;
+
+    ADRC_ESO_autotune3.raise_time_flag = true ; 
+    ADRC_ESO_autotune3.disturbance_raise_time_flag = true ;
+    ADRC_ESO_autotune3.max_ESO_z1 = 0;
+    ADRC_ESO_autotune3.max_ESO_z2 = 0;
+
+    ADRC_ESO_autotune4.raise_time_flag = true ; 
+    ADRC_ESO_autotune4.disturbance_raise_time_flag = true ;
+    ADRC_ESO_autotune4.max_ESO_z1 = 0;
+    ADRC_ESO_autotune4.max_ESO_z2 = 0;
+
+    ADRC_ESO_autotune5.raise_time_flag = true ; 
+    ADRC_ESO_autotune5.disturbance_raise_time_flag = true ;
+    ADRC_ESO_autotune5.max_ESO_z1 = 0;
+    ADRC_ESO_autotune5.max_ESO_z2 = 0;
+    
 
 
     return true;
@@ -93,7 +116,7 @@ void Copter::ModeStabilize::run()
     // 2*0.5 second : return to level
          
     
-    if (roll_dis_radio_in > 1700 && ADRC_ESO_autotune1.b0 < 2000.0) // ch13 bigger than 1700 then start call disturbance
+    if (roll_dis_radio_in > 1700 && ADRC_ESO_autotune1.b0 < 1000.0) // ch13 bigger than 1700 then start call disturbance
     {   
                   
         // step 1 : 1st second : override body rate control, call a 90 deg/s rate control to test z1
@@ -563,30 +586,30 @@ void Copter::ModeStabilize::record_final_result(float target_velocity_temp, floa
     // z1 : steady state error , raise time , peak time , overshoot
 
     // test 1
-    ADRC_ESO_autotune1.ADRC_ESO_z1_error = ADRC_ESO_autotune1.total_steady_state_error + ADRC_ESO_autotune1.raise_time + ADRC_ESO_autotune1.peak_time + ADRC_ESO_autotune1.overshoot_z1 ;
-    ADRC_ESO_autotune1.ADRC_ESO_z2_error = ADRC_ESO_autotune1.total_disturbance_steady_state_error + ADRC_ESO_autotune1.disturbance_raise_time + ADRC_ESO_autotune1.disturbance_peak_time + ADRC_ESO_autotune1.overshoot_z2 ;
+    ADRC_ESO_autotune1.ADRC_ESO_z1_error = 0.0025 * ADRC_ESO_autotune1.total_steady_state_error + ADRC_ESO_autotune1.raise_time + ADRC_ESO_autotune1.peak_time + ADRC_ESO_autotune1.overshoot_z1 ;
+    ADRC_ESO_autotune1.ADRC_ESO_z2_error = 0.0025 * ADRC_ESO_autotune1.total_disturbance_steady_state_error + ADRC_ESO_autotune1.disturbance_raise_time + ADRC_ESO_autotune1.disturbance_peak_time + ADRC_ESO_autotune1.overshoot_z2 ;
     ADRC_ESO_autotune1.total_error = ADRC_ESO_autotune1.ADRC_ESO_z1_error + ADRC_ESO_autotune1.ADRC_ESO_z2_error;
 
 
 
     // test 2
-    ADRC_ESO_autotune2.ADRC_ESO_z1_error = ADRC_ESO_autotune2.total_steady_state_error + ADRC_ESO_autotune2.raise_time + ADRC_ESO_autotune2.peak_time + ADRC_ESO_autotune2.overshoot_z1 ;
-    ADRC_ESO_autotune2.ADRC_ESO_z2_error = ADRC_ESO_autotune2.total_disturbance_steady_state_error + ADRC_ESO_autotune2.disturbance_raise_time + ADRC_ESO_autotune2.disturbance_peak_time + ADRC_ESO_autotune2.overshoot_z2 ;
+    ADRC_ESO_autotune2.ADRC_ESO_z1_error = 0.0025 * ADRC_ESO_autotune2.total_steady_state_error + ADRC_ESO_autotune2.raise_time + ADRC_ESO_autotune2.peak_time + ADRC_ESO_autotune2.overshoot_z1 ;
+    ADRC_ESO_autotune2.ADRC_ESO_z2_error = 0.0025 * ADRC_ESO_autotune2.total_disturbance_steady_state_error + ADRC_ESO_autotune2.disturbance_raise_time + ADRC_ESO_autotune2.disturbance_peak_time + ADRC_ESO_autotune2.overshoot_z2 ;
     ADRC_ESO_autotune2.total_error = ADRC_ESO_autotune2.ADRC_ESO_z1_error + ADRC_ESO_autotune2.ADRC_ESO_z2_error;
 
     // test 3
-    ADRC_ESO_autotune3.ADRC_ESO_z1_error = ADRC_ESO_autotune3.total_steady_state_error + ADRC_ESO_autotune3.raise_time + ADRC_ESO_autotune3.peak_time + ADRC_ESO_autotune3.overshoot_z1 ;
-    ADRC_ESO_autotune3.ADRC_ESO_z2_error = ADRC_ESO_autotune3.total_disturbance_steady_state_error + ADRC_ESO_autotune3.disturbance_raise_time + ADRC_ESO_autotune3.disturbance_peak_time + ADRC_ESO_autotune3.overshoot_z2 ;
+    ADRC_ESO_autotune3.ADRC_ESO_z1_error = 0.0025 * ADRC_ESO_autotune3.total_steady_state_error + ADRC_ESO_autotune3.raise_time + ADRC_ESO_autotune3.peak_time + ADRC_ESO_autotune3.overshoot_z1 ;
+    ADRC_ESO_autotune3.ADRC_ESO_z2_error = 0.0025 * ADRC_ESO_autotune3.total_disturbance_steady_state_error + ADRC_ESO_autotune3.disturbance_raise_time + ADRC_ESO_autotune3.disturbance_peak_time + ADRC_ESO_autotune3.overshoot_z2 ;
     ADRC_ESO_autotune3.total_error = ADRC_ESO_autotune3.ADRC_ESO_z1_error + ADRC_ESO_autotune3.ADRC_ESO_z2_error;
    
     // test 4
-    ADRC_ESO_autotune4.ADRC_ESO_z1_error = ADRC_ESO_autotune4.total_steady_state_error + ADRC_ESO_autotune4.raise_time + ADRC_ESO_autotune4.peak_time + ADRC_ESO_autotune4.overshoot_z1 ;
-    ADRC_ESO_autotune4.ADRC_ESO_z2_error = ADRC_ESO_autotune4.total_disturbance_steady_state_error + ADRC_ESO_autotune4.disturbance_raise_time + ADRC_ESO_autotune4.disturbance_peak_time + ADRC_ESO_autotune4.overshoot_z2 ;
+    ADRC_ESO_autotune4.ADRC_ESO_z1_error = 0.0025 * ADRC_ESO_autotune4.total_steady_state_error + ADRC_ESO_autotune4.raise_time + ADRC_ESO_autotune4.peak_time + ADRC_ESO_autotune4.overshoot_z1 ;
+    ADRC_ESO_autotune4.ADRC_ESO_z2_error = 0.0025 * ADRC_ESO_autotune4.total_disturbance_steady_state_error + ADRC_ESO_autotune4.disturbance_raise_time + ADRC_ESO_autotune4.disturbance_peak_time + ADRC_ESO_autotune4.overshoot_z2 ;
     ADRC_ESO_autotune4.total_error = ADRC_ESO_autotune4.ADRC_ESO_z1_error + ADRC_ESO_autotune4.ADRC_ESO_z2_error;
    
     // test 5
-    ADRC_ESO_autotune5.ADRC_ESO_z1_error = ADRC_ESO_autotune5.total_steady_state_error + ADRC_ESO_autotune5.raise_time + ADRC_ESO_autotune5.peak_time + ADRC_ESO_autotune5.overshoot_z1 ;
-    ADRC_ESO_autotune5.ADRC_ESO_z2_error = ADRC_ESO_autotune5.total_disturbance_steady_state_error + ADRC_ESO_autotune5.disturbance_raise_time + ADRC_ESO_autotune5.disturbance_peak_time + ADRC_ESO_autotune5.overshoot_z2 ;
+    ADRC_ESO_autotune5.ADRC_ESO_z1_error = 0.0025 * ADRC_ESO_autotune5.total_steady_state_error + ADRC_ESO_autotune5.raise_time + ADRC_ESO_autotune5.peak_time + ADRC_ESO_autotune5.overshoot_z1 ;
+    ADRC_ESO_autotune5.ADRC_ESO_z2_error = 0.0025 * ADRC_ESO_autotune5.total_disturbance_steady_state_error + ADRC_ESO_autotune5.disturbance_raise_time + ADRC_ESO_autotune5.disturbance_peak_time + ADRC_ESO_autotune5.overshoot_z2 ;
     ADRC_ESO_autotune5.total_error = ADRC_ESO_autotune5.ADRC_ESO_z1_error + ADRC_ESO_autotune5.ADRC_ESO_z2_error;
 
 

@@ -638,7 +638,7 @@ void Copter::Log_Write_disturbance_result()
         test2_z2               : -(ADRC_ESO_autotune2.z2/ADRC_ESO_autotune2.b0),  
         ESO_2_error1                       :ADRC_ESO_autotune2.ADRC_ESO_z1_error, 
         ESO_2_error2                       :ADRC_ESO_autotune2.ADRC_ESO_z2_error,
-        ESO_2_TE                       :ADRC_ESO_autotune2.ADRC_ESO_z1_error + ADRC_ESO_autotune2.ADRC_ESO_z2_error,
+        ESO_2_TE                       :ADRC_ESO_autotune2.total_error,
     };
     DataFlash.WriteBlock(&pkt, sizeof(pkt));
 }
@@ -674,13 +674,13 @@ void Copter::Log_Write_disturbance_result2()
         test3_z2               : -(ADRC_ESO_autotune3.z2/ADRC_ESO_autotune3.b0),  
         ESO_3_error1                       :ADRC_ESO_autotune3.ADRC_ESO_z1_error, 
         ESO_3_error2                       :ADRC_ESO_autotune3.ADRC_ESO_z2_error,
-        ESO_3_TE                       :ADRC_ESO_autotune3.ADRC_ESO_z1_error + ADRC_ESO_autotune3.ADRC_ESO_z2_error,
+        ESO_3_TE                       :ADRC_ESO_autotune3.total_error,
 
         test4_z1               : ADRC_ESO_autotune4.z1,
         test4_z2               : -(ADRC_ESO_autotune4.z2/ADRC_ESO_autotune4.b0),  
         ESO_4_error1                       :ADRC_ESO_autotune4.ADRC_ESO_z1_error, 
         ESO_4_error2                       :ADRC_ESO_autotune4.ADRC_ESO_z2_error,
-        ESO_4_TE                       :ADRC_ESO_autotune4.ADRC_ESO_z1_error + ADRC_ESO_autotune4.ADRC_ESO_z2_error,
+        ESO_4_TE                       :ADRC_ESO_autotune4.total_error,
 
 
     };
@@ -710,7 +710,7 @@ void Copter::Log_Write_disturbance_result3()
         test5_z2               : -(ADRC_ESO_autotune5.z2/ADRC_ESO_autotune5.b0),  
         ESO_5_error1                       :ADRC_ESO_autotune5.ADRC_ESO_z1_error, 
         ESO_5_error2                       :ADRC_ESO_autotune5.ADRC_ESO_z2_error,
-        ESO_5_TE                       :ADRC_ESO_autotune5.ADRC_ESO_z1_error + ADRC_ESO_autotune5.ADRC_ESO_z2_error,
+        ESO_5_TE                       :ADRC_ESO_autotune5.total_error,
     };
     DataFlash.WriteBlock(&pkt, sizeof(pkt));
 }
@@ -889,10 +889,10 @@ const struct LogStructure Copter::log_structure[] = {
       "ATUN",   "Qffffffffffff",   "TimeUS,PDF,PD,t1_z1,t1_z2,e11,e12,e1T,t2_z1,t2_z2,e21,e22,e2T", "s------------", "F------------", },
 
     { LOG_disturbance_flag_MSG2, sizeof(log_disturbance_flag2),
-      "ATu2",   "Qffffffffff",   "TimeUS,t3_z1,t3_z2,e31,e32,e3T,t4_z1,t4_z2,e41,e42,e4T", "s----------", "F----------", },
+      "ATU2",   "Qffffffffff",   "TimeUS,t3_z1,t3_z2,e31,e32,e3T,t4_z1,t4_z2,e41,e42,e4T", "s----------", "F----------", },
     
     { LOG_disturbance_flag_MSG3, sizeof(log_disturbance_flag3),
-      "ATu3",   "Qfffff",   "TimeUS,t5_z1,t5_z2,e51,e52,e5T", "s-----", "F-----", },
+      "ATU3",   "Qfffff",   "TimeUS,t5_z1,t5_z2,e51,e52,e5T", "s-----", "F-----", },
     
 ////////////////////////////////////////////////////////////////////////////////////
 
