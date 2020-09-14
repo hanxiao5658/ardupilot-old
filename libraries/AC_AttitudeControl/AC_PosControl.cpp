@@ -2,6 +2,7 @@
 #include "AC_PosControl.h"
 #include <AP_Math/AP_Math.h>
 #include <DataFlash/DataFlash.h>
+#include <RC_Channel/RC_Channel.h>
 
 extern const AP_HAL::HAL& hal;
 
@@ -181,6 +182,90 @@ const AP_Param::GroupInfo AC_PosControl::var_info[] = {
     // @Increment: 1
     // @User: Advanced
     AP_GROUPINFO("_ANGLE_MAX",  7, AC_PosControl, _lean_angle_max, 0.0f),
+
+    //////////////////////////////////////////////////////////////////////////////////////////////////////
+    // ADRC position control parameters
+    
+    // @Param: _ANGLE_MAX
+    // @DisplayName: Position Control Angle Max
+    // @Description: Maximum lean angle autopilot can request.  Set to zero to use ANGLE_MAX parameter value
+    // @Units: deg
+    // @Range: 0 45
+    // @Increment: 1
+    // @User: Advanced
+    AP_GROUPINFO("z_b0",  8, AC_PosControl, z_b0, 100.0f),
+
+     // @Param: _ANGLE_MAX
+    // @DisplayName: Position Control Angle Max
+    // @Description: Maximum lean angle autopilot can request.  Set to zero to use ANGLE_MAX parameter value
+    // @Units: deg
+    // @Range: 0 45
+    // @Increment: 1
+    // @User: Advanced
+    AP_GROUPINFO("z_w0",  9, AC_PosControl, z_w0, 50.0f),
+
+     // @Param: _ANGLE_MAX
+    // @DisplayName: Position Control Angle Max
+    // @Description: Maximum lean angle autopilot can request.  Set to zero to use ANGLE_MAX parameter value
+    // @Units: deg
+    // @Range: 0 45
+    // @Increment: 1
+    // @User: Advanced
+    AP_GROUPINFO("x_b0",  10, AC_PosControl, x_b0, 100.0f),
+
+     // @Param: _ANGLE_MAX
+    // @DisplayName: Position Control Angle Max
+    // @Description: Maximum lean angle autopilot can request.  Set to zero to use ANGLE_MAX parameter value
+    // @Units: deg
+    // @Range: 0 45
+    // @Increment: 1
+    // @User: Advanced
+    AP_GROUPINFO("y_b0",  11, AC_PosControl, y_b0, 100.0f),
+
+     // @Param: _ANGLE_MAX
+    // @DisplayName: Position Control Angle Max
+    // @Description: Maximum lean angle autopilot can request.  Set to zero to use ANGLE_MAX parameter value
+    // @Units: deg
+    // @Range: 0 45
+    // @Increment: 1
+    // @User: Advanced
+    AP_GROUPINFO("x_w0",  12, AC_PosControl, x_w0, 1.0f),
+
+    // @Param: _ANGLE_MAX
+    // @DisplayName: Position Control Angle Max
+    // @Description: Maximum lean angle autopilot can request.  Set to zero to use ANGLE_MAX parameter value
+    // @Units: deg
+    // @Range: 0 45
+    // @Increment: 1
+    // @User: Advanced
+    AP_GROUPINFO("y_w0",  13, AC_PosControl, y_w0, 1.0f),
+
+    // @Param: _ANGLE_MAX
+    // @DisplayName: Position Control Angle Max
+    // @Description: Maximum lean angle autopilot can request.  Set to zero to use ANGLE_MAX parameter value
+    // @Units: deg
+    // @Range: 0 45
+    // @Increment: 1
+    // @User: Advanced
+    AP_GROUPINFO("z_ch",  14, AC_PosControl, z_ch, 8),
+
+    // @Param: _ANGLE_MAX
+    // @DisplayName: Position Control Angle Max
+    // @Description: Maximum lean angle autopilot can request.  Set to zero to use ANGLE_MAX parameter value
+    // @Units: deg
+    // @Range: 0 45
+    // @Increment: 1
+    // @User: Advanced
+    AP_GROUPINFO("xy_ch",  15, AC_PosControl, xy_ch, 0),
+
+    // @Param: _ANGLE_MAX
+    // @DisplayName: Position Control Angle Max
+    // @Description: Maximum lean angle autopilot can request.  Set to zero to use ANGLE_MAX parameter value
+    // @Units: deg
+    // @Range: 0 45
+    // @Increment: 1
+    // @User: Advanced
+    AP_GROUPINFO("pos_dis_ch",  16, AC_PosControl, dis_ch, 10),
 
     AP_GROUPEND
 };
@@ -635,19 +720,31 @@ void AC_PosControl::run_z_controller()
     float thr_out = (p+i+d)*0.001f +_motors.get_throttle_hover();
 
 ///////////////////////////////////////////////////////////////////////////////////////
-/**/  
-    ADRC_POS_Z.b0 = 3;
-    //ADRC_POS_Z.ADRC_P_signal = _pid_vel_z.get_p() + _accel_desired.z;
-    //ADRC_POS_Z.ADRC_D_signal = _pid_vel_z.get_d();
-    //ADRC_POS_Z.PD = ADRC_POS_Z.ADRC_P_signal + ADRC_POS_Z.ADRC_D_signal;
-    //ESO_POS(&ADRC_POS_Z, ADRC_POS_Z.ADRC_final_signal, curr_vel.z, 10.0);
+ 
+    ADRC_POS_Z.b0 = z_b0;
+    ADRC_POS_Z.w0 = z_w0;
+
     ADRC_POS_Z.ADRC_P_signal = p ;
     ADRC_POS_Z.ADRC_D_signal = d;
     ADRC_POS_Z.PD = ADRC_POS_Z.ADRC_P_signal + ADRC_POS_Z.ADRC_D_signal ;
-    first_order_ESO_POS(&ADRC_POS_Z, ADRC_POS_Z.ADRC_final_signal, z_accel_meas, 40.0);
+
+    first_order_ESO_POS(&ADRC_POS_Z, ADRC_POS_Z.ADRC_final_signal, z_accel_meas * 0.001, ADRC_POS_Z.w0);
+    
     ADRC_POS_Z.ADRC_final_signal = ( ADRC_POS_Z.PD -  ADRC_POS_Z.z2/ADRC_POS_Z.b0 )* 0.001; //b0 is also very important for ESO
-    //thr_out = ADRC_POS_Z.ADRC_final_signal + _motors.get_throttle_hover() ;
-      
+    
+    uint16_t radio_in = (z_ch >= 7) ? RC_Channels::rc_channel(z_ch - 1)->get_radio_in() : 0;
+    if (radio_in > 1700)
+    {
+        thr_out = ADRC_POS_Z.ADRC_final_signal + _motors.get_throttle_hover() ;
+    }
+
+    //switch on/off disturbance for z
+    uint16_t dis_switch = (dis_ch >= 7) ? RC_Channels::rc_channel(dis_ch - 1)->get_radio_in() : 0;
+    if (dis_switch > 1700)
+    {
+        thr_out =  thr_out - 0.5;
+    }  
+    
  
 ///////////////////////////////////////////////////////////////////////////////////////
 
@@ -1088,24 +1185,32 @@ void AC_PosControl::run_xy_controller(float dt, float ekfNavVelGainScaler)
     accel_target.y = (vel_xy_p.y + vel_xy_i.y + vel_xy_d.y) * ekfNavVelGainScaler;
 
 /////////////////////////////////////////////////////////////////////////////////////////
-/**/ 
+    ADRC_POS_X.b0 = x_b0;
+    ADRC_POS_X.w0 = x_w0;
+    ADRC_POS_Y.b0 = y_b0;
+    ADRC_POS_Y.w0 = y_w0;
+
     ADRC_POS_X.ADRC_P_signal = vel_xy_p.x * ekfNavVelGainScaler;
     ADRC_POS_X.ADRC_D_signal = vel_xy_d.x * ekfNavVelGainScaler;
     ADRC_POS_X.PD = ADRC_POS_X.ADRC_P_signal + ADRC_POS_X.ADRC_D_signal;
-
 
     ADRC_POS_Y.ADRC_P_signal = vel_xy_p.y * ekfNavVelGainScaler;
     ADRC_POS_Y.ADRC_D_signal = vel_xy_d.y * ekfNavVelGainScaler;
     ADRC_POS_Y.PD = ADRC_POS_Y.ADRC_P_signal + ADRC_POS_Y.ADRC_D_signal;
 
-    ESO_POS(&ADRC_POS_X,ADRC_POS_X.ADRC_final_signal, _vehicle_horiz_vel.x, 10.0) ;
-    ESO_POS(&ADRC_POS_Y,ADRC_POS_Y.ADRC_final_signal, _vehicle_horiz_vel.y, 10.0) ;
+    ESO_POS(&ADRC_POS_X,ADRC_POS_X.ADRC_final_signal, _vehicle_horiz_vel.x * ekfNavVelGainScaler, ADRC_POS_X.w0) ;
+    ESO_POS(&ADRC_POS_Y,ADRC_POS_Y.ADRC_final_signal, _vehicle_horiz_vel.y * ekfNavVelGainScaler, ADRC_POS_Y.w0) ;
 
     ADRC_POS_X.ADRC_final_signal = ADRC_POS_X.PD - ADRC_POS_X.z2/ADRC_POS_X.b0;
     ADRC_POS_Y.ADRC_final_signal = ADRC_POS_Y.PD - ADRC_POS_Y.z2/ADRC_POS_Y.b0;
  
-    //accel_target.x = ADRC_POS_X.ADRC_final_signal;
-    //accel_target.y = ADRC_POS_Y.ADRC_final_signal;   
+     
+    uint16_t radio_in = (xy_ch >= 7) ? RC_Channels::rc_channel(xy_ch - 1)->get_radio_in() : 0;
+    if (radio_in > 1700)
+    {
+        accel_target.x = ADRC_POS_X.ADRC_final_signal;
+        accel_target.y = ADRC_POS_Y.ADRC_final_signal;  
+    }
    
 /////////////////////////////////////////////////////////////////////////////////////////
 

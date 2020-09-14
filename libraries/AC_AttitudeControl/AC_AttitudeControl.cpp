@@ -179,7 +179,7 @@ const AP_Param::GroupInfo AC_AttitudeControl::var_info[] = {
     // @Description: ADRC PID YAW Switch channel
     // @Range: 7 14
     // @User: Standard
-    AP_GROUPINFO("ADRC_Y_CH", 23, AC_AttitudeControl, _adrc_pid_y_ch, 0),
+    AP_GROUPINFO("ADRC_Y_CH", 23, AC_AttitudeControl, _adrc_pid_y_ch, 9),
 
     // @Param: ADRC_R_B0
     // @DisplayName: ADRC ROLL b0
@@ -1171,8 +1171,8 @@ float AC_AttitudeControl::rate_target_to_motor_yaw(float rate_actual_rads, float
 
    /*ESO only */
    /*---ESO parameter---*/
-   ADRCYAW.b0 = 0.5;
-   ADRCYAW.w0 =  1;
+   ADRCYAW.b0 = _adrc_y_b0;
+   ADRCYAW.w0 = _adrc_y_w0;
    // h is integral step, must smaller than 0.0025 (because main loop run this program in 400hz)
    //ADRCYAW.h = 0.0005;
    

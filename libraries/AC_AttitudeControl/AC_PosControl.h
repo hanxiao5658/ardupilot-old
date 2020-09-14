@@ -44,6 +44,22 @@ class AC_PosControl
 {
 public:
 
+    ////////////////////////////////////////////////////////////
+    // ADRC position control parameters 
+    AP_Float z_w0;
+    AP_Float z_b0;
+
+    AP_Float x_w0;
+    AP_Float y_w0;
+    AP_Float x_b0;
+    AP_Float y_b0;
+
+    AP_Float z_ch;
+    AP_Float xy_ch;
+    AP_Float dis_ch;
+
+    ////////////////////////////////////////////////////////////
+
     /// Constructor
     AC_PosControl(const AP_AHRS_View& ahrs, const AP_InertialNav& inav,
                   const AP_Motors& motors, AC_AttitudeControl& attitude_control);
