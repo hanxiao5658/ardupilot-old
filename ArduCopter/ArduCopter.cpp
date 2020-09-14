@@ -324,10 +324,11 @@ void Copter::fourhundred_hz_logging()
         Log_Write_ADRCposition();
         Log_Write_ADRCTD();
         Log_Write_PIDresult();
-        Log_Write_disturbance_result3();
         Log_Write_disturbance_result();
         Log_Write_disturbance_result2();
-        
+        Log_Write_disturbance_result3();
+        //log ADRC parameter for autotunning
+        Log_Write_ADRCpara();
     
 }
 
@@ -370,8 +371,7 @@ void Copter::ten_hz_logging_loop()
 #if FRAME_CONFIG == HELI_FRAME
     Log_Write_Heli();
 #endif
-    //log ADRC parameter for autotunning
-    Log_Write_ADRCpara();
+
 }
 
 // twentyfive_hz_logging - should be run at 25hz
