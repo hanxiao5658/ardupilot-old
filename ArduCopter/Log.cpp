@@ -475,15 +475,13 @@ void Copter::Log_Write_ADRCposition()
  struct log_ADRCposition pkt = {
         LOG_PACKET_HEADER_INIT(LOG_ADRC_pos_MSG),
         time_us         : AP_HAL::micros64(),
-        x_p              : ADRC_POS_X.ADRC_P_signal,
-        
+        x_p              : ADRC_POS_X.ADRC_P_signal,    
         x_d              : ADRC_POS_X.ADRC_D_signal,
-        x_z1             : ADRC_POS_X.x1,
+        x_z1             : ADRC_POS_X.z1,
         x_z2             : -(ADRC_POS_X.z2/ADRC_POS_X.b0),
         x_final_signal   : ADRC_POS_X.ADRC_final_signal,
         disturbance_x   : ADRC_POS_X.disturbance,
         y_p              : ADRC_POS_Y.ADRC_P_signal,
-        
         y_d              : ADRC_POS_Y.ADRC_D_signal,
         y_z1             : ADRC_POS_Y.z1,
         y_z2             : -(ADRC_POS_Y.z2/ADRC_POS_Y.b0),
@@ -530,10 +528,37 @@ void Copter::Log_Write_ADRCZposition()
         z_d              : ADRC_POS_Z.ADRC_D_signal,
         z_z2             : -(ADRC_POS_Z.z2/ADRC_POS_Z.b0),
         z_final_signal   : ADRC_POS_Z.ADRC_final_signal,
-        disturbance      : ADRC_POS_Z.disturbance,
+        disturbance      : ADRC_POS_Z.disturbance,        
     };
     DataFlash.WriteBlock(&pkt, sizeof(pkt));
 }
+
+//log ADRC_xy position2
+struct PACKED log_ADRCxyposition {
+    LOG_PACKET_HEADER;
+    uint64_t time_us;
+    
+    float v_x;
+    float v_y;
+    
+};
+
+
+// Write an ADRC Z packet
+void Copter::Log_Write_ADRCXYposition()
+{
+ struct log_ADRCxyposition pkt = {
+        LOG_PACKET_HEADER_INIT(LOG_ADRC_posXY_MSG),
+        time_us         : AP_HAL::micros64(),
+
+        v_x              : ADRC_POS_X.actual_velocity,
+        v_y              : ADRC_POS_Y.actual_velocity,
+            
+    };
+    DataFlash.WriteBlock(&pkt, sizeof(pkt));
+}
+
+
 
 // Write an ADRC TD packet
 struct PACKED log_ADRCTD {
@@ -924,6 +949,10 @@ const struct LogStructure Copter::log_structure[] = {
 
     { LOG_ADRC_posZ_MSG, sizeof(log_ADRCzposition),
       "APOZ",   "Qfffffffffff",   "TimeUS,x_PID,y_PID,z_PID,x_I,y_I,z_P,z_I,z_D,z_z2,z_fs,dis", "s-----------", "F-----------" },
+    
+
+    { LOG_ADRC_posXY_MSG, sizeof(log_ADRCxyposition),
+      "APO2",   "Qff",   "TimeUS,v_x,v_y", "s--", "F--" },
 
     { LOG_ADRC_TD_MSG, sizeof(log_ADRCTD),
       "ATD",   "Qffffffffff",   "TimeUS,r_tr,r_ar,r_t,r_v1,r_v2,p_tr,p_ar,p_t,p_v1,p_v2", "s----------", "F----------" },

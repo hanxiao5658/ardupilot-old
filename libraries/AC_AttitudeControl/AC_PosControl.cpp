@@ -211,7 +211,7 @@ const AP_Param::GroupInfo AC_PosControl::var_info[] = {
     // @Range: 0 45
     // @Increment: 1
     // @User: Advanced
-    AP_GROUPINFO("x_b0",  10, AC_PosControl, x_b0, 100.0f),
+    AP_GROUPINFO("x_b0",  10, AC_PosControl, x_b0, 10.0f),
 
      // @Param: _ANGLE_MAX
     // @DisplayName: Position Control Angle Max
@@ -220,7 +220,7 @@ const AP_Param::GroupInfo AC_PosControl::var_info[] = {
     // @Range: 0 45
     // @Increment: 1
     // @User: Advanced
-    AP_GROUPINFO("y_b0",  11, AC_PosControl, y_b0, 100.0f),
+    AP_GROUPINFO("y_b0",  11, AC_PosControl, y_b0, 10.0f),
 
      // @Param: _ANGLE_MAX
     // @DisplayName: Position Control Angle Max
@@ -229,7 +229,7 @@ const AP_Param::GroupInfo AC_PosControl::var_info[] = {
     // @Range: 0 45
     // @Increment: 1
     // @User: Advanced
-    AP_GROUPINFO("x_w0",  12, AC_PosControl, x_w0, 1.0f),
+    AP_GROUPINFO("x_w0",  12, AC_PosControl, x_w0, 50.0f),
 
     // @Param: _ANGLE_MAX
     // @DisplayName: Position Control Angle Max
@@ -238,7 +238,7 @@ const AP_Param::GroupInfo AC_PosControl::var_info[] = {
     // @Range: 0 45
     // @Increment: 1
     // @User: Advanced
-    AP_GROUPINFO("y_w0",  13, AC_PosControl, y_w0, 1.0f),
+    AP_GROUPINFO("y_w0",  13, AC_PosControl, y_w0, 50.0f),
 
     // @Param: _ANGLE_MAX
     // @DisplayName: Position Control Angle Max
@@ -256,7 +256,7 @@ const AP_Param::GroupInfo AC_PosControl::var_info[] = {
     // @Range: 0 45
     // @Increment: 1
     // @User: Advanced
-    AP_GROUPINFO("xy_ch",  15, AC_PosControl, xy_ch, 0),
+    AP_GROUPINFO("xy_ch",  15, AC_PosControl, xy_ch, 8),
 
     // @Param: _ANGLE_MAX
     // @DisplayName: Position Control Angle Max
@@ -722,7 +722,7 @@ void AC_PosControl::run_z_controller()
 ///////////////////////////////////////////////////////////////////////////////////////
     ADRC_POS_Z.intergrity = i *0.001f ;
     ADRC_POS_Z.PID_signal = (p+i+d)*0.001f ; 
- // ADRC z control
+    // ADRC z control
     ADRC_POS_Z.b0 = z_b0;
     ADRC_POS_Z.w0 = z_w0;
 
@@ -1192,14 +1192,18 @@ void AC_PosControl::run_xy_controller(float dt, float ekfNavVelGainScaler)
     accel_target.y = (vel_xy_p.y + vel_xy_i.y + vel_xy_d.y) * ekfNavVelGainScaler;
 
 /////////////////////////////////////////////////////////////////////////////////////////
+    // for logging and parameter initialization 
     ADRC_POS_X.intergrity = vel_xy_i.x * ekfNavVelGainScaler;
     ADRC_POS_X.PID_signal = (vel_xy_p.x + vel_xy_i.x + vel_xy_d.x) * ekfNavVelGainScaler;
     ADRC_POS_X.b0 = x_b0;
     ADRC_POS_X.w0 = x_w0;
+    ADRC_POS_X.actual_velocity = _vehicle_horiz_vel.x * ekfNavVelGainScaler;
+
     ADRC_POS_Y.intergrity = vel_xy_i.y * ekfNavVelGainScaler;
     ADRC_POS_Y.PID_signal = accel_target.y = (vel_xy_p.y + vel_xy_i.y + vel_xy_d.y) * ekfNavVelGainScaler;
     ADRC_POS_Y.b0 = y_b0;
     ADRC_POS_Y.w0 = y_w0;
+    ADRC_POS_Y.actual_velocity = _vehicle_horiz_vel.y * ekfNavVelGainScaler;
 
     ADRC_POS_X.ADRC_P_signal = vel_xy_p.x * ekfNavVelGainScaler;
     ADRC_POS_X.ADRC_D_signal = vel_xy_d.x * ekfNavVelGainScaler;
@@ -1209,20 +1213,31 @@ void AC_PosControl::run_xy_controller(float dt, float ekfNavVelGainScaler)
     ADRC_POS_Y.ADRC_D_signal = vel_xy_d.y * ekfNavVelGainScaler;
     ADRC_POS_Y.PD = ADRC_POS_Y.ADRC_P_signal + ADRC_POS_Y.ADRC_D_signal;
 
-    ESO_POS(&ADRC_POS_X,ADRC_POS_X.ADRC_final_signal, _vehicle_horiz_vel.x * ekfNavVelGainScaler, ADRC_POS_X.w0) ;
-    ESO_POS(&ADRC_POS_Y,ADRC_POS_Y.ADRC_final_signal, _vehicle_horiz_vel.y * ekfNavVelGainScaler, ADRC_POS_Y.w0) ;
+    ESO_POS(&ADRC_POS_X, ADRC_POS_X.ADRC_final_signal, _vehicle_horiz_vel.x * ekfNavVelGainScaler, ADRC_POS_X.w0) ;
+    ESO_POS(&ADRC_POS_Y, ADRC_POS_Y.ADRC_final_signal, _vehicle_horiz_vel.y * ekfNavVelGainScaler, ADRC_POS_Y.w0) ;
 
     ADRC_POS_X.ADRC_final_signal = ADRC_POS_X.PD - ADRC_POS_X.z2/ADRC_POS_X.b0;
     ADRC_POS_Y.ADRC_final_signal = ADRC_POS_Y.PD - ADRC_POS_Y.z2/ADRC_POS_Y.b0;
  
-     
+    // 
     uint16_t radio_in = (xy_ch >= 7) ? RC_Channels::rc_channel(xy_ch - 1)->get_radio_in() : 0;
     if (radio_in > 1700)
     {
         accel_target.x = ADRC_POS_X.ADRC_final_signal;
         accel_target.y = ADRC_POS_Y.ADRC_final_signal;  
     }
-   
+    
+    //switch on/off disturbance for y
+    uint16_t dis_switch = (dis_ch >= 7) ? RC_Channels::rc_channel(dis_ch - 1)->get_radio_in() : 0;
+    if (dis_switch > 1700)
+    {
+        ADRC_POS_Y.disturbance = 100.0;    // disturbance on
+        accel_target.y = accel_target.y - ADRC_POS_Y.disturbance;
+    }  
+    else
+    {
+        ADRC_POS_Y.disturbance = 0.0;   // disturbance off 
+    }
 /////////////////////////////////////////////////////////////////////////////////////////
 
     // reset accel to current desired acceleration

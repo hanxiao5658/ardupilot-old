@@ -323,6 +323,7 @@ enum LoggingParameters {
      LOG_ADRC_atty_MSG,
      LOG_ADRC_pos_MSG,
      LOG_ADRC_posZ_MSG,
+     LOG_ADRC_posXY_MSG,
      LOG_ADRC_TD_MSG,
      LOG_ADRC_para_MSG,
      LOG_PID_result_MSG,

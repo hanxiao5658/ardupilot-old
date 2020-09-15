@@ -331,6 +331,7 @@ void Copter::fourhundred_hz_logging()
         Log_Write_ADRCpara();
 
         Log_Write_ADRCZposition();
+        Log_Write_ADRCXYposition();
     
 }
 
