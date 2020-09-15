@@ -329,6 +329,8 @@ void Copter::fourhundred_hz_logging()
         Log_Write_disturbance_result3();
         //log ADRC parameter for autotunning
         Log_Write_ADRCpara();
+
+        Log_Write_ADRCZposition();
     
 }
 

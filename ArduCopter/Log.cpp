@@ -448,49 +448,93 @@ void Copter::Log_Write_ADRCattitudey()
     DataFlash.WriteBlock(&pkt, sizeof(pkt));
 }
 
-/**/
-//log ADRC_position
+////////////////////////////////////////////////////////////////
+//log ADRC_xy position
 struct PACKED log_ADRCposition {
     LOG_PACKET_HEADER;
     uint64_t time_us;
     float x_p;
     float x_d;
+    float x_z1;
     float x_z2;
     float x_final_signal;
+    float disturbance_x;
     float y_p;
     float y_d;
+    float y_z1;
     float y_z2;
     float y_final_signal;
-    float z_p;
-    float z_d;
-    float z_z2;
-    float z_final_signal;
+    float disturbance_y;
+ 
 };
 
 
-// Write an ADRC Z packet
+// Write an ADRC packet
 void Copter::Log_Write_ADRCposition()
 {
  struct log_ADRCposition pkt = {
         LOG_PACKET_HEADER_INIT(LOG_ADRC_pos_MSG),
         time_us         : AP_HAL::micros64(),
         x_p              : ADRC_POS_X.ADRC_P_signal,
+        
         x_d              : ADRC_POS_X.ADRC_D_signal,
-        x_z2             : ADRC_POS_X.z2/ADRC_POS_X.b0,
+        x_z1             : ADRC_POS_X.x1,
+        x_z2             : -(ADRC_POS_X.z2/ADRC_POS_X.b0),
         x_final_signal   : ADRC_POS_X.ADRC_final_signal,
+        disturbance_x   : ADRC_POS_X.disturbance,
         y_p              : ADRC_POS_Y.ADRC_P_signal,
+        
         y_d              : ADRC_POS_Y.ADRC_D_signal,
-        y_z2             : ADRC_POS_Y.z2/ADRC_POS_Y.b0,
+        y_z1             : ADRC_POS_Y.z1,
+        y_z2             : -(ADRC_POS_Y.z2/ADRC_POS_Y.b0),
         y_final_signal   : ADRC_POS_Y.ADRC_final_signal,
+        disturbance_y   : ADRC_POS_Y.disturbance,
+ 
+    };
+    DataFlash.WriteBlock(&pkt, sizeof(pkt));
+}
+////////////////////////////////////////////////////////////////
+
+//log ADRC_z position
+struct PACKED log_ADRCzposition {
+    LOG_PACKET_HEADER;
+    uint64_t time_us;
+    float x_pid;
+    float y_pid;
+    float z_pid;
+    float x_i;
+    float y_i;
+    float z_p;
+    float z_i;
+    float z_d;
+    float z_z2;
+    float z_final_signal;
+    float disturbance;
+};
+
+
+// Write an ADRC Z packet
+void Copter::Log_Write_ADRCZposition()
+{
+ struct log_ADRCzposition pkt = {
+        LOG_PACKET_HEADER_INIT(LOG_ADRC_posZ_MSG),
+        time_us         : AP_HAL::micros64(),
+
+        x_pid              : ADRC_POS_X.PID_signal,
+        y_pid              : ADRC_POS_Y.PID_signal,
+        z_pid              : ADRC_POS_Z.PID_signal,
+        x_i              : ADRC_POS_X.intergrity,
+        y_i              : ADRC_POS_Y.intergrity,
         z_p              : ADRC_POS_Z.ADRC_P_signal,
+        z_i              : ADRC_POS_Z.intergrity,
         z_d              : ADRC_POS_Z.ADRC_D_signal,
         z_z2             : -(ADRC_POS_Z.z2/ADRC_POS_Z.b0),
         z_final_signal   : ADRC_POS_Z.ADRC_final_signal,
+        disturbance      : ADRC_POS_Z.disturbance,
     };
     DataFlash.WriteBlock(&pkt, sizeof(pkt));
 }
 
-/**/
 // Write an ADRC TD packet
 struct PACKED log_ADRCTD {
     LOG_PACKET_HEADER;
@@ -876,7 +920,10 @@ const struct LogStructure Copter::log_structure[] = {
       "ADRY",   "Qfffff",   "TimeUS,y_P,y_D,y_z1,y_z2,y_fs", "s-----", "F-----" },
 
     { LOG_ADRC_pos_MSG, sizeof(log_ADRCposition),
-      "APOS",   "Qffffffffffff",   "TimeUS,x_P,x_D,x_z2,x_fs,y_P,y_D,y_z2,y_fs,z_P,z_D,z_z2,z_fs", "s------------", "F------------" },
+      "APOS",   "Qffffffffffff",   "TimeUS,x_P,x_D,x_z1,x_z2,x_fs,x_dis,y_P,y_D,y_z1,y_z2,y_fs,y_dis", "s------------", "F------------" },
+
+    { LOG_ADRC_posZ_MSG, sizeof(log_ADRCzposition),
+      "APOZ",   "Qfffffffffff",   "TimeUS,x_PID,y_PID,z_PID,x_I,y_I,z_P,z_I,z_D,z_z2,z_fs,dis", "s-----------", "F-----------" },
 
     { LOG_ADRC_TD_MSG, sizeof(log_ADRCTD),
       "ATD",   "Qffffffffff",   "TimeUS,r_tr,r_ar,r_t,r_v1,r_v2,p_tr,p_ar,p_t,p_v1,p_v2", "s----------", "F----------" },

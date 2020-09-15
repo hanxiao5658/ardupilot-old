@@ -202,7 +202,7 @@ const AP_Param::GroupInfo AC_PosControl::var_info[] = {
     // @Range: 0 45
     // @Increment: 1
     // @User: Advanced
-    AP_GROUPINFO("z_w0",  9, AC_PosControl, z_w0, 50.0f),
+    AP_GROUPINFO("z_w0",  9, AC_PosControl, z_w0, 500.0f),
 
      // @Param: _ANGLE_MAX
     // @DisplayName: Position Control Angle Max
@@ -717,10 +717,12 @@ void AC_PosControl::run_z_controller()
     // get d term
     d = _pid_accel_z.get_d();
 
-    float thr_out = (p+i+d)*0.001f +_motors.get_throttle_hover();
+    float thr_out = (p+i+d)*0.001f ;
 
 ///////////////////////////////////////////////////////////////////////////////////////
- 
+    ADRC_POS_Z.intergrity = i *0.001f ;
+    ADRC_POS_Z.PID_signal = (p+i+d)*0.001f ; 
+ // ADRC z control
     ADRC_POS_Z.b0 = z_b0;
     ADRC_POS_Z.w0 = z_w0;
 
@@ -729,23 +731,28 @@ void AC_PosControl::run_z_controller()
     ADRC_POS_Z.PD = ADRC_POS_Z.ADRC_P_signal + ADRC_POS_Z.ADRC_D_signal ;
 
     first_order_ESO_POS(&ADRC_POS_Z, ADRC_POS_Z.ADRC_final_signal, z_accel_meas * 0.001, ADRC_POS_Z.w0);
-    
+
     ADRC_POS_Z.ADRC_final_signal = ( ADRC_POS_Z.PD -  ADRC_POS_Z.z2/ADRC_POS_Z.b0 )* 0.001; //b0 is also very important for ESO
     
     uint16_t radio_in = (z_ch >= 7) ? RC_Channels::rc_channel(z_ch - 1)->get_radio_in() : 0;
     if (radio_in > 1700)
     {
-        thr_out = ADRC_POS_Z.ADRC_final_signal + _motors.get_throttle_hover() ;
+        thr_out = ADRC_POS_Z.ADRC_final_signal  ;
     }
 
     //switch on/off disturbance for z
     uint16_t dis_switch = (dis_ch >= 7) ? RC_Channels::rc_channel(dis_ch - 1)->get_radio_in() : 0;
     if (dis_switch > 1700)
     {
-        thr_out =  thr_out - 0.5;
+        ADRC_POS_Z.disturbance = 0.3;    // disturbance on
     }  
+    else
+    {
+        ADRC_POS_Z.disturbance = 0.0;   // disturbance off 
+    }
     
- 
+    thr_out =  thr_out + _motors.get_throttle_hover() -  ADRC_POS_Z.disturbance; 
+     
 ///////////////////////////////////////////////////////////////////////////////////////
 
     // send throttle to attitude controller with angle boost
@@ -1185,8 +1192,12 @@ void AC_PosControl::run_xy_controller(float dt, float ekfNavVelGainScaler)
     accel_target.y = (vel_xy_p.y + vel_xy_i.y + vel_xy_d.y) * ekfNavVelGainScaler;
 
 /////////////////////////////////////////////////////////////////////////////////////////
+    ADRC_POS_X.intergrity = vel_xy_i.x * ekfNavVelGainScaler;
+    ADRC_POS_X.PID_signal = (vel_xy_p.x + vel_xy_i.x + vel_xy_d.x) * ekfNavVelGainScaler;
     ADRC_POS_X.b0 = x_b0;
     ADRC_POS_X.w0 = x_w0;
+    ADRC_POS_Y.intergrity = vel_xy_i.y * ekfNavVelGainScaler;
+    ADRC_POS_Y.PID_signal = accel_target.y = (vel_xy_p.y + vel_xy_i.y + vel_xy_d.y) * ekfNavVelGainScaler;
     ADRC_POS_Y.b0 = y_b0;
     ADRC_POS_Y.w0 = y_w0;
 

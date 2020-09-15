@@ -33,6 +33,9 @@ float u0;//非线性组合系统输出
 float u;//带扰动补偿后的输出
 float b0=10;//扰动补偿
 float w0=1.0;
+float disturbance = 0.0;
+float intergrity = 0.0; // only for log
+float PID_signal = 0.0; // for log
 
 float kp = 0;
 float kd = 0;
