@@ -1231,7 +1231,7 @@ void AC_PosControl::run_xy_controller(float dt, float ekfNavVelGainScaler)
     uint16_t dis_switch = (dis_ch >= 7) ? RC_Channels::rc_channel(dis_ch - 1)->get_radio_in() : 0;
     if (dis_switch > 1700)
     {
-        ADRC_POS_Y.disturbance = 100.0;    // disturbance on
+        ADRC_POS_Y.disturbance = 0.0;    // disturbance on
         accel_target.y = accel_target.y - ADRC_POS_Y.disturbance;
     }  
     else

@@ -269,6 +269,13 @@ const AP_Param::GroupInfo AC_AttitudeControl::var_info[] = {
     // @User: Standard
     AP_GROUPINFO("tun_ch", 37, AC_AttitudeControl, tun_ch, 13),
 
+    // @Param: TUN_ch
+    // @DisplayName: tun on/off Switch channel
+    // @Description: tun on/off Switch channel
+    // @Range: 7 14
+    // @User: Standard
+    AP_GROUPINFO("add_dis", 38, AC_AttitudeControl, add_disturbance, 0.5),
+
     AP_GROUPEND
 };
 
@@ -1128,7 +1135,7 @@ float AC_AttitudeControl::rate_target_to_motor_pitch(float rate_actual_rads, flo
     if ( pitch_dis_radio_in > 1700 || pitch_disturbance_flag > 0.5)
     {   
         // set disturbance 
-        pitch_disturbance = 0.4;
+        pitch_disturbance = add_disturbance;
         // add disturbance by -0.3 
         output = output - pitch_disturbance ;
     }

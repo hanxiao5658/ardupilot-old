@@ -91,6 +91,7 @@ public:
     AP_Float disturbance_ch;
     AP_Float tun_ch;
     AP_Float _adrc_t_b0;
+    AP_Float add_disturbance;
 
 //////////////////////////////////////////////
 
