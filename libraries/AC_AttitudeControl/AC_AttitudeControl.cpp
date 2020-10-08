@@ -1118,7 +1118,7 @@ float AC_AttitudeControl::rate_target_to_motor_pitch(float rate_actual_rads, flo
     ADRC_ESO_autotune4.w0 = _adrc_t_w0 + 60.0; // 70
     ADRC_ESO_autotune5.w0 = _adrc_t_w0 + 80.0; // 90
 
-    // 2 3 4 5 use same b0
+    // 2 3 4 5 use same b0 _adrc_t_b0
     ADRC_ESO_autotune2.b0 = _adrc_t_b0;
     ADRC_ESO_autotune3.b0 = _adrc_t_b0;
     ADRC_ESO_autotune4.b0 = _adrc_t_b0;
