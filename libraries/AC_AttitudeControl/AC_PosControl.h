@@ -56,8 +56,10 @@ public:
 
     AP_Float z_ch;
     AP_Float xy_ch;
-    AP_Float dis_ch;
-
+    AP_Float xy_dis_ch;
+    AP_Float z_dis_ch;
+    AP_Float xy_disturbance;
+    AP_Float z_disturbance;
     ////////////////////////////////////////////////////////////
 
     /// Constructor

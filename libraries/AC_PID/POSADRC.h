@@ -57,6 +57,9 @@ float ADRC_P_signal;
 float ADRC_D_signal;
 float ADRC_final_signal;
 float actual_velocity = 0.0;
+
+float target_position;
+float actual_position;
 /////////////////////////////////////////////////
 float actual_angle=0.0f;
 

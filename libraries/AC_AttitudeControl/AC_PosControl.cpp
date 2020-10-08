@@ -10,6 +10,13 @@ extern POS_Fhan_Data ADRC_POS_X;
 extern POS_Fhan_Data ADRC_POS_Y;
 extern POS_Fhan_Data ADRC_POS_Z;
 
+extern POS_Fhan_Data ADRC_POS_XY_TEST_1;
+extern POS_Fhan_Data ADRC_POS_XY_TEST_2;
+extern POS_Fhan_Data ADRC_POS_XY_TEST_3;
+extern POS_Fhan_Data ADRC_POS_Z_TEST_1;
+extern POS_Fhan_Data ADRC_POS_Z_TEST_2;
+extern POS_Fhan_Data ADRC_POS_Z_TEST_3;
+
 #if APM_BUILD_TYPE(APM_BUILD_ArduPlane)
  // default gains for Plane
  # define POSCONTROL_POS_Z_P                    1.0f    // vertical position controller P gain default
@@ -247,7 +254,7 @@ const AP_Param::GroupInfo AC_PosControl::var_info[] = {
     // @Range: 0 45
     // @Increment: 1
     // @User: Advanced
-    AP_GROUPINFO("z_ch",  14, AC_PosControl, z_ch, 8),
+    AP_GROUPINFO("z_ch",  14, AC_PosControl, z_ch, 14),
 
     // @Param: _ANGLE_MAX
     // @DisplayName: Position Control Angle Max
@@ -256,7 +263,7 @@ const AP_Param::GroupInfo AC_PosControl::var_info[] = {
     // @Range: 0 45
     // @Increment: 1
     // @User: Advanced
-    AP_GROUPINFO("xy_ch",  15, AC_PosControl, xy_ch, 8),
+    AP_GROUPINFO("xy_ch",  15, AC_PosControl, xy_ch, 14),
 
     // @Param: _ANGLE_MAX
     // @DisplayName: Position Control Angle Max
@@ -265,7 +272,34 @@ const AP_Param::GroupInfo AC_PosControl::var_info[] = {
     // @Range: 0 45
     // @Increment: 1
     // @User: Advanced
-    AP_GROUPINFO("pos_dis_ch",  16, AC_PosControl, dis_ch, 10),
+    AP_GROUPINFO("xy_dis_ch",  16, AC_PosControl, xy_dis_ch, 10),
+
+    // @Param: _ANGLE_MAX
+    // @DisplayName: Position Control Angle Max
+    // @Description: Maximum lean angle autopilot can request.  Set to zero to use ANGLE_MAX parameter value
+    // @Units: deg
+    // @Range: 0 45
+    // @Increment: 1
+    // @User: Advanced
+    AP_GROUPINFO("z_dis_ch",  17, AC_PosControl, z_dis_ch, 10),
+
+    // @Param: _ANGLE_MAX
+    // @DisplayName: Position Control Angle Max
+    // @Description: Maximum lean angle autopilot can request.  Set to zero to use ANGLE_MAX parameter value
+    // @Units: deg
+    // @Range: 0 45
+    // @Increment: 1
+    // @User: Advanced
+    AP_GROUPINFO("z_d",  18, AC_PosControl, z_disturbance, 0.2),
+
+    // @Param: _ANGLE_MAX
+    // @DisplayName: Position Control Angle Max
+    // @Description: Maximum lean angle autopilot can request.  Set to zero to use ANGLE_MAX parameter value
+    // @Units: deg
+    // @Range: 0 45
+    // @Increment: 1
+    // @User: Advanced
+    AP_GROUPINFO("xy_d",  19, AC_PosControl, xy_disturbance, 1.1),
 
     AP_GROUPEND
 };
@@ -614,6 +648,10 @@ void AC_PosControl::run_z_controller()
         _limit.pos_down = true;
     }
 
+    // log for target Z and actual Z 
+    ADRC_POS_Z.target_position = _pos_target.z;
+    ADRC_POS_Z.actual_position = curr_alt;
+
     // calculate _vel_target.z using from _pos_error.z using sqrt controller
     _vel_target.z = AC_AttitudeControl::sqrt_controller(_pos_error.z, _p_pos_z.kP(), _accel_z_cms, _dt);
 
@@ -740,11 +778,26 @@ void AC_PosControl::run_z_controller()
         thr_out = ADRC_POS_Z.ADRC_final_signal  ;
     }
 
+    ////////////////////////////////////////////////////////
+    // test ESO
+    ADRC_POS_Z_TEST_1.w0 = 10;
+    ADRC_POS_Z_TEST_2.w0 = 50;
+    ADRC_POS_Z_TEST_3.w0 = 90;
+
+    ADRC_POS_Z_TEST_1.b0 = z_b0;
+    ADRC_POS_Z_TEST_2.b0 = z_b0;
+    ADRC_POS_Z_TEST_3.b0 = z_b0;
+
+    first_order_ESO_POS(&ADRC_POS_Z_TEST_1, thr_out, z_accel_meas * 0.001, ADRC_POS_Z_TEST_1.w0);
+    first_order_ESO_POS(&ADRC_POS_Z_TEST_2, thr_out, z_accel_meas * 0.001, ADRC_POS_Z_TEST_2.w0);
+    first_order_ESO_POS(&ADRC_POS_Z_TEST_3, thr_out, z_accel_meas * 0.001, ADRC_POS_Z_TEST_3.w0);
+    ////////////////////////////////////////////////////////
+
     //switch on/off disturbance for z
-    uint16_t dis_switch = (dis_ch >= 7) ? RC_Channels::rc_channel(dis_ch - 1)->get_radio_in() : 0;
+    uint16_t dis_switch = (z_dis_ch >= 7) ? RC_Channels::rc_channel(z_dis_ch - 1)->get_radio_in() : 0;
     if (dis_switch > 1700)
     {
-        ADRC_POS_Z.disturbance = 0.3;    // disturbance on
+        ADRC_POS_Z.disturbance = z_disturbance;    // disturbance on
     }  
     else
     {
@@ -1149,6 +1202,11 @@ void AC_PosControl::run_xy_controller(float dt, float ekfNavVelGainScaler)
         _vel_target = sqrt_controller(_pos_error, kP, _accel_cms);
     }
 
+    ADRC_POS_X.target_position = _pos_target.x;
+    ADRC_POS_Y.target_position = _pos_target.y;
+    ADRC_POS_X.actual_position = curr_pos.x;
+    ADRC_POS_Y.actual_position = curr_pos.y;
+
     // add velocity feed-forward
     _vel_target.x += _vel_desired.x;
     _vel_target.y += _vel_desired.y;
@@ -1218,6 +1276,15 @@ void AC_PosControl::run_xy_controller(float dt, float ekfNavVelGainScaler)
 
     ADRC_POS_X.ADRC_final_signal = ADRC_POS_X.PD - ADRC_POS_X.z2/ADRC_POS_X.b0;
     ADRC_POS_Y.ADRC_final_signal = ADRC_POS_Y.PD - ADRC_POS_Y.z2/ADRC_POS_Y.b0;
+
+    // test for xy ESO
+    ADRC_POS_XY_TEST_1.w0 = 10;
+    ADRC_POS_XY_TEST_2.w0 = 50;
+    ADRC_POS_XY_TEST_3.w0 = 90;
+
+    ADRC_POS_XY_TEST_1.b0 = x_b0;
+    ADRC_POS_XY_TEST_2.b0 = x_b0;
+    ADRC_POS_XY_TEST_3.b0 = x_b0;
  
     // 
     uint16_t radio_in = (xy_ch >= 7) ? RC_Channels::rc_channel(xy_ch - 1)->get_radio_in() : 0;
@@ -1226,17 +1293,21 @@ void AC_PosControl::run_xy_controller(float dt, float ekfNavVelGainScaler)
         accel_target.x = ADRC_POS_X.ADRC_final_signal;
         accel_target.y = ADRC_POS_Y.ADRC_final_signal;  
     }
+
+    ESO_POS(&ADRC_POS_XY_TEST_1, accel_target.x, _vehicle_horiz_vel.x * ekfNavVelGainScaler, ADRC_POS_XY_TEST_1.w0) ;
+    ESO_POS(&ADRC_POS_XY_TEST_2, accel_target.x, _vehicle_horiz_vel.x * ekfNavVelGainScaler, ADRC_POS_XY_TEST_2.w0) ;
+    ESO_POS(&ADRC_POS_XY_TEST_3, accel_target.x, _vehicle_horiz_vel.x * ekfNavVelGainScaler, ADRC_POS_XY_TEST_3.w0) ;
     
     //switch on/off disturbance for y
-    uint16_t dis_switch = (dis_ch >= 7) ? RC_Channels::rc_channel(dis_ch - 1)->get_radio_in() : 0;
+    uint16_t dis_switch = (xy_dis_ch >= 7) ? RC_Channels::rc_channel(xy_dis_ch - 1)->get_radio_in() : 0;
     if (dis_switch > 1700)
     {
-        ADRC_POS_Y.disturbance = 0.0;    // disturbance on
-        accel_target.y = accel_target.y - ADRC_POS_Y.disturbance;
+        ADRC_POS_X.disturbance = xy_disturbance;    // disturbance on
+        accel_target.x = accel_target.x - ADRC_POS_X.disturbance;
     }  
     else
     {
-        ADRC_POS_Y.disturbance = 0.0;   // disturbance off 
+        ADRC_POS_X.disturbance = 0.0;   // disturbance off 
     }
 /////////////////////////////////////////////////////////////////////////////////////////
 

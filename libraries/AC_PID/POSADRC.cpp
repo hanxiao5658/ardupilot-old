@@ -6,7 +6,12 @@
 POS_Fhan_Data ADRC_POS_X;
 POS_Fhan_Data ADRC_POS_Y;
 POS_Fhan_Data ADRC_POS_Z;
-
+POS_Fhan_Data ADRC_POS_XY_TEST_1;
+POS_Fhan_Data ADRC_POS_XY_TEST_2;
+POS_Fhan_Data ADRC_POS_XY_TEST_3;
+POS_Fhan_Data ADRC_POS_Z_TEST_1;
+POS_Fhan_Data ADRC_POS_Z_TEST_2;
+POS_Fhan_Data ADRC_POS_Z_TEST_3;
 
 float Constrain_Float_POS(float amt, float low, float high)
 {

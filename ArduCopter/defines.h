@@ -330,6 +330,9 @@ enum LoggingParameters {
      LOG_disturbance_flag_MSG,
      LOG_disturbance_flag_MSG2,
      LOG_disturbance_flag_MSG3,
+     LOG_ztest_MSG,
+     LOG_xytest_MSG,
+     LOG_targetposition_MSG,
 
 };
 

@@ -13,6 +13,13 @@ extern Fhan_Data ADRC_ESO_autotune2;
 extern Fhan_Data ADRC_ESO_autotune3;
 extern Fhan_Data ADRC_ESO_autotune4;
 extern Fhan_Data ADRC_ESO_autotune5;
+
+extern POS_Fhan_Data ADRC_POS_XY_TEST_1;
+extern POS_Fhan_Data ADRC_POS_XY_TEST_2;
+extern POS_Fhan_Data ADRC_POS_XY_TEST_3;
+extern POS_Fhan_Data ADRC_POS_Z_TEST_1;
+extern POS_Fhan_Data ADRC_POS_Z_TEST_2;
+extern POS_Fhan_Data ADRC_POS_Z_TEST_3;
 // Code to Write and Read packets from DataFlash log memory
 // Code to interact with the user to dump or erase logs
 
@@ -540,6 +547,8 @@ struct PACKED log_ADRCxyposition {
     
     float v_x;
     float v_y;
+    float z_b0;
+    float xy_b0;
     
 };
 
@@ -553,6 +562,8 @@ void Copter::Log_Write_ADRCXYposition()
 
         v_x              : ADRC_POS_X.actual_velocity,
         v_y              : ADRC_POS_Y.actual_velocity,
+        z_b0              : ADRC_POS_Z.b0,
+        xy_b0              : ADRC_POS_X.b0,
             
     };
     DataFlash.WriteBlock(&pkt, sizeof(pkt));
@@ -668,6 +679,106 @@ void Copter::Log_Write_PIDresult()
     DataFlash.WriteBlock(&pkt, sizeof(pkt));
 }
 
+/////////////////////////////////////////////////////////////////
+// below is test log for z
+
+struct PACKED log_ztest {
+    LOG_PACKET_HEADER;
+    uint64_t time_us;
+    float zt1_z2;
+    float zt2_z2;
+    float zt3_z2;
+    float zdisturbance;
+
+};
+
+void Copter::Log_Write_ztest()
+{
+ struct log_ztest pkt = {
+        LOG_PACKET_HEADER_INIT(LOG_ztest_MSG),
+        time_us         : AP_HAL::micros64(),
+        zt1_z2             : -(ADRC_POS_Z_TEST_1.z2/ADRC_POS_Z_TEST_1.b0),
+        zt2_z2             : -(ADRC_POS_Z_TEST_2.z2)/ADRC_POS_Z_TEST_2.b0,
+        zt3_z2             : -(ADRC_POS_Z_TEST_3.z2/ADRC_POS_Z_TEST_3.b0),
+        zdisturbance       : ADRC_POS_Z.disturbance,
+ 
+ 
+        
+    };
+    DataFlash.WriteBlock(&pkt, sizeof(pkt));
+}
+
+// above is test log for z 
+/////////////////////////////////////////////////////////////////
+// below is test for xy
+
+struct PACKED log_xytest {
+    LOG_PACKET_HEADER;
+    uint64_t time_us;
+    float xyt1_z1;
+    float xyt1_z2;
+    float xyt2_z1;
+    float xyt2_z2;
+    float xyt3_z1;
+    float xyt3_z2;    
+    float xydisturbance;
+
+};
+
+void Copter::Log_Write_xytest()
+{
+ struct log_xytest pkt = {
+        LOG_PACKET_HEADER_INIT(LOG_xytest_MSG),
+        time_us         : AP_HAL::micros64(),
+        xyt1_z1             : ADRC_POS_XY_TEST_1.z1,
+        xyt1_z2             : -(ADRC_POS_XY_TEST_1.z2/ADRC_POS_XY_TEST_1.b0),
+        xyt2_z1             : ADRC_POS_XY_TEST_2.z1,
+        xyt2_z2             : -(ADRC_POS_XY_TEST_2.z2/ADRC_POS_XY_TEST_2.b0),
+        xyt3_z1             : ADRC_POS_XY_TEST_3.z1,
+        xyt3_z2             : -(ADRC_POS_XY_TEST_3.z2/ADRC_POS_XY_TEST_3.b0),
+
+        xydisturbance       : ADRC_POS_X.disturbance,
+ 
+ 
+        
+    };
+    DataFlash.WriteBlock(&pkt, sizeof(pkt));
+}
+
+// above is test for xy
+/////////////////////////////////////////////////////////////////
+// below is log for target position and actual position
+
+struct PACKED log_target_position {
+    LOG_PACKET_HEADER;
+    uint64_t time_us;
+    float x_target_position;
+    float x_actual_position;
+    float y_target_position;
+    float y_actual_position;
+    float z_target_position;
+    float z_actual_position;    
+    
+
+};
+
+void Copter::Log_Write_targetposition()
+{
+ struct log_target_position pkt = {
+        LOG_PACKET_HEADER_INIT(LOG_targetposition_MSG),
+        time_us         : AP_HAL::micros64(),
+        x_target_position             : ADRC_POS_X.target_position,
+        x_actual_position             : ADRC_POS_X.actual_position,
+        y_target_position             : ADRC_POS_Y.target_position,
+        y_actual_position             : ADRC_POS_Y.actual_position,
+        z_target_position             : ADRC_POS_Z.target_position,
+        z_actual_position             : ADRC_POS_Z.actual_position,
+        
+    };
+    DataFlash.WriteBlock(&pkt, sizeof(pkt));
+}
+
+// above is log for target position and actual position
 /////////////////////////////////////////////////////////////////
 // Write an disturbance flag packet
 struct PACKED log_disturbance_flag {
@@ -952,7 +1063,7 @@ const struct LogStructure Copter::log_structure[] = {
     
 
     { LOG_ADRC_posXY_MSG, sizeof(log_ADRCxyposition),
-      "APO2",   "Qff",   "TimeUS,v_x,v_y", "s--", "F--" },
+      "APO2",   "Qffff",   "TimeUS,v_x,v_y,zb0,xyb0", "s----", "F----" },
 
     { LOG_ADRC_TD_MSG, sizeof(log_ADRCTD),
       "ATD",   "Qffffffffff",   "TimeUS,r_tr,r_ar,r_t,r_v1,r_v2,p_tr,p_ar,p_t,p_v1,p_v2", "s----------", "F----------" },
@@ -971,7 +1082,15 @@ const struct LogStructure Copter::log_structure[] = {
     
     { LOG_disturbance_flag_MSG3, sizeof(log_disturbance_flag3),
       "ATU3",   "Qfffff",   "TimeUS,t5_z1,t5_z2,e51,e52,e5T", "s-----", "F-----", },
+
+    { LOG_ztest_MSG, sizeof(log_ztest),
+      "ZT",   "Qffff",   "TimeUS,T1_z2,T2_z2,T3_z2,dis", "s----", "F----", },
+
+    { LOG_xytest_MSG, sizeof(log_xytest),
+      "XYT",   "Qfffffff",   "TimeUS,T1_z1,T1_z2,T2_z1,T2_z2,T3_z1,T3_z2,dis", "s-------", "F-------", },  
     
+    { LOG_targetposition_MSG, sizeof(log_target_position),
+      "ATPO",   "Qffffff",   "TimeUS,XTPO,XAPO,YTPO,YAPO,ZTPO,ZAPO", "s------", "F------", },
 ////////////////////////////////////////////////////////////////////////////////////
 
 #if FRAME_CONFIG == HELI_FRAME

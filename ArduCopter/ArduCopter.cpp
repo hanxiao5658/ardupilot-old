@@ -332,6 +332,9 @@ void Copter::fourhundred_hz_logging()
 
         Log_Write_ADRCZposition();
         Log_Write_ADRCXYposition();
+        Log_Write_ztest();
+        Log_Write_xytest();
+        Log_Write_targetposition();
     
 }
 

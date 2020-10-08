@@ -805,6 +805,9 @@ private:
     void Log_Write_MotBatt();
     void Log_Write_ADRCpara();
     void Log_Write_PIDresult();
+    void Log_Write_ztest();
+    void Log_Write_xytest();
+    void Log_Write_targetposition();
     void Log_Write_disturbance_result();
     void Log_Write_disturbance_result2();
     void Log_Write_disturbance_result3();
