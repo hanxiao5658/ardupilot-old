@@ -689,6 +689,8 @@ struct PACKED log_ztest {
     float zt2_z2;
     float zt3_z2;
     float zdisturbance;
+    float z_tb0;
+    float xy_tb0;
 
 };
 
@@ -701,7 +703,8 @@ void Copter::Log_Write_ztest()
         zt2_z2             : -(ADRC_POS_Z_TEST_2.z2)/ADRC_POS_Z_TEST_2.b0,
         zt3_z2             : -(ADRC_POS_Z_TEST_3.z2/ADRC_POS_Z_TEST_3.b0),
         zdisturbance       : ADRC_POS_Z.disturbance,
- 
+        z_tb0              : ADRC_POS_Z_TEST_1.b0,
+        xy_tb0             : ADRC_POS_XY_TEST_1.b0,
  
         
     };
@@ -1084,7 +1087,7 @@ const struct LogStructure Copter::log_structure[] = {
       "ATU3",   "Qfffff",   "TimeUS,t5_z1,t5_z2,e51,e52,e5T", "s-----", "F-----", },
 
     { LOG_ztest_MSG, sizeof(log_ztest),
-      "ZT",   "Qffff",   "TimeUS,T1_z2,T2_z2,T3_z2,dis", "s----", "F----", },
+      "ZT",   "Qffffff",   "TimeUS,T1_z2,T2_z2,T3_z2,dis,ztb0,xytb0", "s------", "F------", },
 
     { LOG_xytest_MSG, sizeof(log_xytest),
       "XYT",   "Qfffffff",   "TimeUS,T1_z1,T1_z2,T2_z1,T2_z2,T3_z1,T3_z2,dis", "s-------", "F-------", },  

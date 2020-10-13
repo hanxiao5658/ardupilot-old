@@ -48,11 +48,13 @@ public:
     // ADRC position control parameters 
     AP_Float z_w0;
     AP_Float z_b0;
+    AP_Float z_tb0;
 
     AP_Float x_w0;
     AP_Float y_w0;
     AP_Float x_b0;
     AP_Float y_b0;
+    AP_Float xy_tb0;
 
     AP_Float z_ch;
     AP_Float xy_ch;

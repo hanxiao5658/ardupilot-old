@@ -301,6 +301,24 @@ const AP_Param::GroupInfo AC_PosControl::var_info[] = {
     // @User: Advanced
     AP_GROUPINFO("xy_d",  19, AC_PosControl, xy_disturbance, 1.1),
 
+    // @Param: _ANGLE_MAX
+    // @DisplayName: Position Control Angle Max
+    // @Description: Maximum lean angle autopilot can request.  Set to zero to use ANGLE_MAX parameter value
+    // @Units: deg
+    // @Range: 0 45
+    // @Increment: 1
+    // @User: Advanced
+    AP_GROUPINFO("z_tb0",  20, AC_PosControl, z_tb0, 100),
+
+    // @Param: _ANGLE_MAX
+    // @DisplayName: Position Control Angle Max
+    // @Description: Maximum lean angle autopilot can request.  Set to zero to use ANGLE_MAX parameter value
+    // @Units: deg
+    // @Range: 0 45
+    // @Increment: 1
+    // @User: Advanced
+    AP_GROUPINFO("xy_tb0",  21, AC_PosControl, xy_tb0, 100),
+
     AP_GROUPEND
 };
 
@@ -770,7 +788,7 @@ void AC_PosControl::run_z_controller()
 
     first_order_ESO_POS(&ADRC_POS_Z, ADRC_POS_Z.ADRC_final_signal, z_accel_meas * 0.001, ADRC_POS_Z.w0);
 
-    ADRC_POS_Z.ADRC_final_signal = ( ADRC_POS_Z.PD -  ADRC_POS_Z.z2/ADRC_POS_Z.b0 )* 0.001; //b0 is also very important for ESO
+    ADRC_POS_Z.ADRC_final_signal = ADRC_POS_Z.PD * 0.001 -  ADRC_POS_Z.z2/ADRC_POS_Z.b0 ; //b0 is also very important for ESO
     
     uint16_t radio_in = (z_ch >= 7) ? RC_Channels::rc_channel(z_ch - 1)->get_radio_in() : 0;
     if (radio_in > 1700)
@@ -784,9 +802,9 @@ void AC_PosControl::run_z_controller()
     ADRC_POS_Z_TEST_2.w0 = 50;
     ADRC_POS_Z_TEST_3.w0 = 90;
 
-    ADRC_POS_Z_TEST_1.b0 = z_b0;
-    ADRC_POS_Z_TEST_2.b0 = z_b0;
-    ADRC_POS_Z_TEST_3.b0 = z_b0;
+    ADRC_POS_Z_TEST_1.b0 = z_tb0;
+    ADRC_POS_Z_TEST_2.b0 = z_tb0;
+    ADRC_POS_Z_TEST_3.b0 = z_tb0;
 
     first_order_ESO_POS(&ADRC_POS_Z_TEST_1, thr_out, z_accel_meas * 0.001, ADRC_POS_Z_TEST_1.w0);
     first_order_ESO_POS(&ADRC_POS_Z_TEST_2, thr_out, z_accel_meas * 0.001, ADRC_POS_Z_TEST_2.w0);
@@ -1282,9 +1300,9 @@ void AC_PosControl::run_xy_controller(float dt, float ekfNavVelGainScaler)
     ADRC_POS_XY_TEST_2.w0 = 50;
     ADRC_POS_XY_TEST_3.w0 = 90;
 
-    ADRC_POS_XY_TEST_1.b0 = x_b0;
-    ADRC_POS_XY_TEST_2.b0 = x_b0;
-    ADRC_POS_XY_TEST_3.b0 = x_b0;
+    ADRC_POS_XY_TEST_1.b0 = xy_tb0;
+    ADRC_POS_XY_TEST_2.b0 = xy_tb0;
+    ADRC_POS_XY_TEST_3.b0 = xy_tb0;
  
     // 
     uint16_t radio_in = (xy_ch >= 7) ? RC_Channels::rc_channel(xy_ch - 1)->get_radio_in() : 0;
