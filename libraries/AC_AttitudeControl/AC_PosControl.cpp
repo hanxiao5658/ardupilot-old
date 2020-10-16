@@ -319,6 +319,24 @@ const AP_Param::GroupInfo AC_PosControl::var_info[] = {
     // @User: Advanced
     AP_GROUPINFO("xy_tb0",  21, AC_PosControl, xy_tb0, 100),
 
+    // @Param: _ANGLE_MAX
+    // @DisplayName: Position Control Angle Max
+    // @Description: Maximum lean angle autopilot can request.  Set to zero to use ANGLE_MAX parameter value
+    // @Units: deg
+    // @Range: 0 45
+    // @Increment: 1
+    // @User: Advanced
+    AP_GROUPINFO("z_tw0",  22, AC_PosControl, z_tw0, 10),
+
+    // @Param: _ANGLE_MAX
+    // @DisplayName: Position Control Angle Max
+    // @Description: Maximum lean angle autopilot can request.  Set to zero to use ANGLE_MAX parameter value
+    // @Units: deg
+    // @Range: 0 45
+    // @Increment: 1
+    // @User: Advanced
+    AP_GROUPINFO("xy_tw0",  23, AC_PosControl, xy_tw0, 10),
+
     AP_GROUPEND
 };
 
@@ -798,9 +816,9 @@ void AC_PosControl::run_z_controller()
 
     ////////////////////////////////////////////////////////
     // test ESO
-    ADRC_POS_Z_TEST_1.w0 = 10;
-    ADRC_POS_Z_TEST_2.w0 = 50;
-    ADRC_POS_Z_TEST_3.w0 = 90;
+    ADRC_POS_Z_TEST_1.w0 = z_tw0;
+    ADRC_POS_Z_TEST_2.w0 = z_tw0 + 40;
+    ADRC_POS_Z_TEST_3.w0 = z_tw0 + 80;
 
     ADRC_POS_Z_TEST_1.b0 = z_tb0;
     ADRC_POS_Z_TEST_2.b0 = z_tb0;
@@ -1276,7 +1294,7 @@ void AC_PosControl::run_xy_controller(float dt, float ekfNavVelGainScaler)
     ADRC_POS_X.actual_velocity = _vehicle_horiz_vel.x * ekfNavVelGainScaler;
 
     ADRC_POS_Y.intergrity = vel_xy_i.y * ekfNavVelGainScaler;
-    ADRC_POS_Y.PID_signal = accel_target.y = (vel_xy_p.y + vel_xy_i.y + vel_xy_d.y) * ekfNavVelGainScaler;
+    ADRC_POS_Y.PID_signal =  (vel_xy_p.y + vel_xy_i.y + vel_xy_d.y) * ekfNavVelGainScaler;
     ADRC_POS_Y.b0 = y_b0;
     ADRC_POS_Y.w0 = y_w0;
     ADRC_POS_Y.actual_velocity = _vehicle_horiz_vel.y * ekfNavVelGainScaler;
@@ -1296,9 +1314,9 @@ void AC_PosControl::run_xy_controller(float dt, float ekfNavVelGainScaler)
     ADRC_POS_Y.ADRC_final_signal = ADRC_POS_Y.PD - ADRC_POS_Y.z2/ADRC_POS_Y.b0;
 
     // test for xy ESO
-    ADRC_POS_XY_TEST_1.w0 = 10;
-    ADRC_POS_XY_TEST_2.w0 = 50;
-    ADRC_POS_XY_TEST_3.w0 = 90;
+    ADRC_POS_XY_TEST_1.w0 = xy_tw0;
+    ADRC_POS_XY_TEST_2.w0 = xy_tw0 + 5;
+    ADRC_POS_XY_TEST_3.w0 = xy_tw0 + 10;
 
     ADRC_POS_XY_TEST_1.b0 = xy_tb0;
     ADRC_POS_XY_TEST_2.b0 = xy_tb0;
@@ -1308,8 +1326,8 @@ void AC_PosControl::run_xy_controller(float dt, float ekfNavVelGainScaler)
     uint16_t radio_in = (xy_ch >= 7) ? RC_Channels::rc_channel(xy_ch - 1)->get_radio_in() : 0;
     if (radio_in > 1700)
     {
-        accel_target.x = ADRC_POS_X.ADRC_final_signal;
-        accel_target.y = ADRC_POS_Y.ADRC_final_signal;  
+        accel_target.x = ADRC_POS_X.ADRC_final_signal * ekfNavVelGainScaler;
+        accel_target.y = ADRC_POS_Y.ADRC_final_signal * ekfNavVelGainScaler;  
     }
 
     ESO_POS(&ADRC_POS_XY_TEST_1, accel_target.x, _vehicle_horiz_vel.x * ekfNavVelGainScaler, ADRC_POS_XY_TEST_1.w0) ;

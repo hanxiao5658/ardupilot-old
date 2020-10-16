@@ -327,6 +327,16 @@ void Copter::fourhundred_hz_logging()
         Log_Write_disturbance_result();
         Log_Write_disturbance_result2();
         Log_Write_disturbance_result3();
+       
+    
+}
+
+// ten_hz_logging_loop
+// should be run at 10hz
+void Copter::ten_hz_logging_loop()
+{
+
+        
         //log ADRC parameter for autotunning
         Log_Write_ADRCpara();
 
@@ -335,13 +345,9 @@ void Copter::fourhundred_hz_logging()
         Log_Write_ztest();
         Log_Write_xytest();
         Log_Write_targetposition();
-    
-}
 
-// ten_hz_logging_loop
-// should be run at 10hz
-void Copter::ten_hz_logging_loop()
-{
+
+
     // log attitude data if we're not already logging at the higher rate
     if (should_log(MASK_LOG_ATTITUDE_MED) && !should_log(MASK_LOG_ATTITUDE_FAST)) {
         Log_Write_Attitude();
