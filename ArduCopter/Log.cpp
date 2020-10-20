@@ -760,7 +760,10 @@ struct PACKED log_target_position {
     float y_target_position;
     float y_actual_position;
     float z_target_position;
-    float z_actual_position;    
+    float z_actual_position;  
+    float EX;
+    float EY;
+    float EZ;  
     
 
 };
@@ -776,6 +779,9 @@ void Copter::Log_Write_targetposition()
         y_actual_position             : ADRC_POS_Y.actual_position,
         z_target_position             : ADRC_POS_Z.target_position,
         z_actual_position             : ADRC_POS_Z.actual_position,
+        EX                            : (ADRC_POS_X.actual_position - ADRC_POS_X.target_position),
+        EY                            : (ADRC_POS_Y.actual_position - ADRC_POS_Y.target_position),
+        EZ                            : (ADRC_POS_Z.actual_position - ADRC_POS_Z.target_position),
         
     };
     DataFlash.WriteBlock(&pkt, sizeof(pkt));
@@ -1093,7 +1099,7 @@ const struct LogStructure Copter::log_structure[] = {
       "XYT",   "Qfffffff",   "TimeUS,T1_z1,T1_z2,T2_z1,T2_z2,T3_z1,T3_z2,dis", "s-------", "F-------", },  
     
     { LOG_targetposition_MSG, sizeof(log_target_position),
-      "ATPO",   "Qffffff",   "TimeUS,XTPO,XAPO,YTPO,YAPO,ZTPO,ZAPO", "s------", "F------", },
+      "ATPO",   "Qfffffffff",   "TimeUS,XTPO,XAPO,YTPO,YAPO,ZTPO,ZAPO,EX,EY,EZ", "s---------", "F---------", },
 ////////////////////////////////////////////////////////////////////////////////////
 
 #if FRAME_CONFIG == HELI_FRAME
